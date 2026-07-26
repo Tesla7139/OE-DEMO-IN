@@ -72,11 +72,11 @@ export function Hero() {
         >
           <motion.h1
             variants={fadeUp}
-            className="flex flex-col items-center text-balance font-medium tracking-tight text-foreground"
-            style={{ fontFamily: "var(--font-inter), sans-serif", fontSize: "clamp(2rem, 5vw, 5.25rem)", lineHeight: 1.05, letterSpacing: "-0.022em" }}
+            className="text-balance font-semibold tracking-tight text-foreground"
+            style={{ fontFamily: "var(--font-display), sans-serif", fontSize: "clamp(2rem, 5vw, 5.25rem)", lineHeight: 1.04, letterSpacing: "-0.022em" }}
           >
-            <span>Improve Engagement and</span>
-            <span>increase <span className="text-[#155FFF]">upsells by 8%</span></span>
+            Reduce Support Tickets and Add Thousands in{" "}
+            <span className="text-[#155FFF]">Upsell Revenue</span>
           </motion.h1>
 
           <motion.p
