@@ -2,31 +2,33 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronDown, ChevronRight, Globe, MapPin, Pencil, Play, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
+import { Check, ChevronDown, ChevronRight, Globe, MapPin, Pencil, Play, Sparkles, TrendingUp } from "lucide-react";
 import type { DemoStore, DemoProduct } from "@/lib/site";
 import type { Addr } from "./DemoMock";
 import { DemoMock } from "./DemoMock";
 import { OneTapUpsellMock } from "./OneTapUpsellMock";
-import { EUWithdrawalMock } from "./EUWithdrawalMock";
 import { TourOverlay, type TourRect } from "./TourOverlay";
 import { ShopifyAppStoreBadge } from "./ShopifyAppStoreBadge";
 import { BuiltForShopifyBadge } from "./BuiltForShopifyBadge";
 
 const APP_URL = "https://apps.shopify.com/clickpost-order-edit-cancel";
 
-type Tab = "editing" | "upsell" | "address" | "cancel" | "eu-withdrawal";
-type Tour = "editing" | "upsell" | "address" | "eu-withdrawal";
+type Tab = "editing" | "upsell" | "address" | "cancel";
+type Tour = "editing" | "upsell" | "address";
 type Section = "contact" | "shipping" | "order" | "discount" | "cancel";
 
-/** Address the guided tour drops into the form to demonstrate an edit. */
-const CORRECTED_ADDRESS: Partial<Addr> = { line1: "C-42, Greater Kailash I", city: "New Delhi", zip: "110048" };
+/**
+ * Address the guided tour drops into the form to demonstrate an edit — a move from
+ * Gurugram into Delhi. `state` must be set explicitly: the shopper's default state
+ * is Haryana, so omitting it would leave "New Delhi, Haryana".
+ */
+const CORRECTED_ADDRESS: Partial<Addr> = { line1: "C-42, Greater Kailash I", city: "New Delhi", state: "Delhi", zip: "110048" };
 
 /** Left-rail features, each with an icon. */
 const NAV_FEATURES: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { key: "editing", label: "Order editing", icon: Pencil },
   { key: "upsell", label: "Post-purchase upsell", icon: TrendingUp },
   { key: "address", label: "Address validation", icon: MapPin },
-  { key: "eu-withdrawal", label: "EU withdrawal", icon: ShieldCheck },
 ];
 
 
@@ -254,62 +256,15 @@ const ADDRESS_TOUR_STEPS: TourStepDef[] = [
     scrollAlignTop: true,
   },
   {
-    // end of the address validation tour → conversion screen
+    // Last feature in TOUR_ORDER, so this is the end of the whole journey: with no
+    // next feature to hand off to, TourOverlay renders the full conversion box
+    // (eyebrow + headline + App Store badge) rather than an "Up next" card.
     id: "address-finish",
     title: "",
     desc: "",
     cta: "Finish",
     measureDelayMs: 320,
     outcome: true,
-    finalStep: true,
-  },
-];
-
-const EU_WITHDRAWAL_TOUR_STEPS: TourStepDef[] = [
-  {
-    id: "eu-card",
-    title: "EU withdrawal, built in",
-    desc: "From 19 June 2026, EU shoppers need a clear withdrawal function. 'Withdraw from contract' sits right on the order status page — tap it, then confirm, and it's acknowledged by email instantly.",
-    cta: "Next",
-    measureDelayMs: 320,
-    spotlightId: "eu-card",
-    dotId: "eu-withdraw-row", // one red dot — opens the withdrawal form (empty)
-    autoClickId: "eu-withdraw-row",
-    seamless: true, // keep the highlight while the form opens, then advance to the fill
-    advanceDelayMs: 700,
-  },
-  {
-    // details type themselves in (empty → filled), then auto-advance to Send
-    id: "eu-fill",
-    title: "",
-    desc: "",
-    cta: "Next",
-    measureDelayMs: 360,
-    hideCard: true,
-    spotlightId: "eu-withdraw-row",
-    dotId: "eu-withdraw-row",
-    autoAdvanceMs: 3400, // let the reason/email/phone/message fill in
-  },
-  {
-    id: "eu-submit",
-    title: "",
-    desc: "",
-    cta: "Next",
-    measureDelayMs: 520,
-    hideCard: true, // no new box — dot moves to the submit button
-    spotlightId: "eu-withdraw-row", // the form area — stays framed as it becomes the confirmation
-    dotId: "eu-withdraw-btn",
-    autoClickId: "eu-withdraw-btn", // submit the request
-  },
-  {
-    id: "eu-finish",
-    title: "EU-ready withdrawal",
-    desc: "A compliant, well-routed withdrawal flow that holds the order and keeps your team in control.",
-    cta: "Finish",
-    measureDelayMs: 320,
-    outcome: true,
-    outcomeHeadline: "EU-ready withdrawal",
-    outcomeButton: "Get the EU withdrawal function for my store now",
     nextTour: null,
     finalStep: true,
   },
@@ -319,18 +274,17 @@ const TOUR_STEPS: Record<Tour, TourStepDef[]> = {
   editing: EDITING_TOUR_STEPS,
   upsell: UPSELL_TOUR_STEPS,
   address: ADDRESS_TOUR_STEPS,
-  "eu-withdrawal": EU_WITHDRAWAL_TOUR_STEPS,
 };
 
 // Order features run in — the finale "Watch next" CTA chains to the next one.
-const TOUR_ORDER: Tour[] = ["editing", "upsell", "address", "eu-withdrawal"];
+// Address validation is last, so it ends on the conversion box.
+const TOUR_ORDER: Tour[] = ["editing", "upsell", "address"];
 
 // One-line pitch shown on the "up next" hand-off box before each feature's tour.
 const FEATURE_INTRO: Record<Tour, string> = {
   editing: "Let shoppers edit their own orders — swaps, add-ons, quantities — without a support ticket.",
   upsell: "One-tap offers right after checkout that lift average order value with zero extra ad spend.",
   address: "Catch undeliverable addresses before they ship — fewer failed deliveries and RTO.",
-  "eu-withdrawal": "Automate EU withdrawal requests and stay compliant with zero manual work.",
 };
 
 /** Clickpost "Order Edit & Cancel" app icon — official logo from /public. */
@@ -357,11 +311,6 @@ const FINALE: Record<Tab, { action: string; brand: string; stat: string }> = {
     action: "stop failed deliveries",
     brand: "World of Asaya",
     stat: "cut RTO by 25% by fixing wrong addresses before they shipped.",
-  },
-  "eu-withdrawal": {
-    action: "stay EU-compliant",
-    brand: "French Accent",
-    stat: "automated EU withdrawal requests and stayed compliant with zero extra work.",
   },
   cancel: {
     action: "handle cancellations",
@@ -419,8 +368,6 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
   const [addrOverride, setAddrOverride] = useState<Partial<Addr> | undefined>(undefined);
   const [qtyBump, setQtyBump] = useState(0); // tour: add one more of the first item
   const [demoResetKey, setDemoResetKey] = useState(0); // bump to remount the demo fresh
-  const [euResetKey, setEuResetKey] = useState(0); // bump to remount the EU withdrawal page fresh
-  const [euAutoFill, setEuAutoFill] = useState(0); // bump to type the withdrawal details in
   const [addrResetKey, setAddrResetKey] = useState(0); // bump to remount the address-validation window fresh
   const [upsellResetKey, setUpsellResetKey] = useState(0); // bump to remount the upsell windows fresh
 
@@ -458,17 +405,12 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
   const addrSaveBtnRef = useRef<HTMLButtonElement>(null);
   const addrFlaggedRef = useRef<HTMLDivElement>(null);
   const addrShippingRowRef = useRef<HTMLDivElement>(null);
-  // EU-withdrawal tour targets
-  const euCardRef = useRef<HTMLDivElement>(null);
-  const euWithdrawRowRef = useRef<HTMLDivElement>(null);
-  const euWithdrawBtnRef = useRef<HTMLButtonElement>(null);
   // rail feature-card refs (for highlighting the "next" feature on outcome steps)
   const editingCardRef = useRef<HTMLButtonElement>(null);
   const upsellCardRef = useRef<HTMLButtonElement>(null);
   const addressCardRef = useRef<HTMLButtonElement>(null);
-  const euWithdrawalCardRef = useRef<HTMLButtonElement>(null);
   const cardRefs: Partial<Record<Tab, React.RefObject<HTMLButtonElement | null>>> = {
-    editing: editingCardRef, upsell: upsellCardRef, address: addressCardRef, "eu-withdrawal": euWithdrawalCardRef,
+    editing: editingCardRef, upsell: upsellCardRef, address: addressCardRef,
   };
   const pauseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -510,7 +452,6 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
       case "to-address": return addressCardRef.current;
       case "feature-upsell": return upsellCardRef.current;
       case "feature-address": return addressCardRef.current;
-      case "feature-eu": return euWithdrawalCardRef.current;
       case "upsell-toggle": return upsellToggleRef.current;
       case "upsell-offer": return upsellOfferRef.current;
       case "upsell-add": return upsellAddBtnRef.current;
@@ -520,9 +461,6 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
       case "ty-ship-add": return tyShipAddRef.current;
       case "addr-validate": return addrSaveBtnRef.current;
       case "addr-flagged": return addrFlaggedRef.current;
-      case "eu-card": return euCardRef.current;
-      case "eu-withdraw-row": return euWithdrawRowRef.current;
-      case "eu-withdraw-btn": return euWithdrawBtnRef.current;
       default: return null;
     }
   }
@@ -572,10 +510,6 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
       case "ty-pay":
       case "to-address":
         setUpsellView("thankyou");
-        break;
-      case "eu-fill":
-        // form is open (empty) — type the withdrawal details in
-        setEuAutoFill((k) => k + 1);
         break;
       default:
         // address steps + outcome steps: nothing to pre-open
@@ -1080,15 +1014,6 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
                     addressValidation
                     scriptedValidation={activeTour === "address"}
                     tourRefs={{ shippingRow: addrShippingRowRef, addressBlock: addrFlaggedRef, addrSaveBtn: addrSaveBtnRef }}
-                  />
-                )}
-                {tab === "eu-withdrawal" && (
-                  <EUWithdrawalMock
-                    key={`eu-${euResetKey}`}
-                    store={store}
-                    autoFill={euAutoFill}
-                    manualFill={activeTour === "eu-withdrawal"}
-                    tourRefs={{ euCard: euCardRef, withdrawRow: euWithdrawRowRef, withdrawBtn: euWithdrawBtnRef }}
                   />
                 )}
                 {tab === "cancel" && (

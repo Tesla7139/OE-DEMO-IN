@@ -249,10 +249,10 @@ function EditingBody({ countdown }: { countdown: string }) {
 
 // The address the hero types out on its own. Module-scope so the "still typing"
 // check below stays in sync with the string's real length.
-const TYPED_ADDR = "C-42, Greater Kailash I";
-const TYPED_CITY = "New Delhi";
-const TYPED_PIN = "110048";
-const TYPED_STATE = "Delhi";
+const TYPED_ADDR = "Tower 3, 1402, The Magnolias";
+const TYPED_CITY = "Gurugram";
+const TYPED_PIN = "122009";
+const TYPED_STATE = "Haryana";
 
 function AddressBody({ onSaved }: { onSaved: () => void }) {
   const [address, setAddress] = useState("");

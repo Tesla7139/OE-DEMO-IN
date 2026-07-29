@@ -22,26 +22,28 @@ export const DEFAULT_PHONE = "+91 98110 26538";
 export const DEFAULT_COUNTRY = "India";
 
 /**
- * The shopper's address as they typed it. In address-validation mode this is the
- * FLAGGED state: the mistake is the classic Indian RTO cause — a neighbouring PIN
- * (110025 serves Lajpat Nagar IV / Jangpura, not Lajpat Nagar II) plus abbreviated
- * street lines couriers mis-sort.
+ * The shopper's address as they typed it — a DLF Golf Course Road address in
+ * Gurugram. In address-validation mode this is the FLAGGED state, carrying the
+ * three mistakes that actually cause RTO in India:
+ *   1. abbreviated street lines couriers mis-sort ("T-3", "Golf Course Rd")
+ *   2. the old city name ("Gurgaon" was officially renamed Gurugram in 2016)
+ *   3. a neighbouring PIN — 122002 serves Sector 42/43, not DLF Phase 5
  */
 export const DEFAULT_ADDR: Addr = {
   first: "Mohit",
   last: "Jain",
-  line1: "H-14, 2nd Flr, Lajpat Ngr II",
-  city: "New Delhi",
-  state: "Delhi",
-  zip: "110025",
+  line1: "T-3 1402, Magnolias, Golf Course Rd",
+  city: "Gurgaon",
+  state: "Haryana",
+  zip: "122002",
 };
 
-/** What validation resolves it to: abbreviations expanded, PIN corrected. */
+/** What validation resolves it to: expanded, renamed to Gurugram, PIN corrected. */
 export const VERIFIED_ADDR: Addr = {
   first: "Mohit",
   last: "Jain",
-  line1: "H-14, Second Floor, Lajpat Nagar II",
-  city: "New Delhi",
-  state: "Delhi",
-  zip: "110024",
+  line1: "Tower 3, 1402, The Magnolias, DLF Golf Course Road",
+  city: "Gurugram",
+  state: "Haryana",
+  zip: "122009",
 };

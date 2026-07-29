@@ -12,16 +12,16 @@ type Fields = {
   firstName: string; lastName: string; address1: string; address2: string;
   city: string; state: string; zip: string; country: string;
 };
-// What the shopper typed vs. what Google resolves it to: the abbreviated street
-// line is expanded and the neighbouring PIN (110025 is Lajpat Nagar IV) is fixed
-// to the one that actually serves Lajpat Nagar II.
+// What the shopper typed vs. what Google resolves it to: abbreviations expanded,
+// "Gurgaon" corrected to its official name, and the neighbouring PIN (122002 serves
+// Sector 42/43) fixed to the one that actually serves DLF Phase 5.
 const ENTERED: Fields = {
-  firstName: "Mohit", lastName: "Jain", address1: "H-14, 2nd Flr, Lajpat Ngr II", address2: "",
-  city: "New Delhi", state: "Delhi", zip: "110025", country: "India",
+  firstName: "Mohit", lastName: "Jain", address1: "T-3 1402, Magnolias, Golf Course Rd", address2: "",
+  city: "Gurgaon", state: "Haryana", zip: "122002", country: "India",
 };
 const CORRECTED: Fields = {
-  firstName: "Mohit", lastName: "Jain", address1: "H-14, Second Floor, Lajpat Nagar II", address2: "",
-  city: "New Delhi", state: "Delhi", zip: "110024", country: "India",
+  firstName: "Mohit", lastName: "Jain", address1: "Tower 3, 1402, The Magnolias, DLF Golf Course Road", address2: "",
+  city: "Gurugram", state: "Haryana", zip: "122009", country: "India",
 };
 
 /** The four-colour Google "G". */
