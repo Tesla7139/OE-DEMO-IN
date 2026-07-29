@@ -272,14 +272,53 @@ export const customerLogos: CustomerLogo[] = [
 // Love. Keyed by exact brand name.
 export type BrandInfo = { tier?: string; country?: string };
 export const brandInfo: Record<string, BrandInfo> = {
+  // --- non-Indian merchants ---
   "Doonails": { tier: "$100M+ brand", country: "Germany" },
   "Curl Warehouse": { tier: "7-figure brand", country: "Canada" },
   "VanillaPura": { tier: "7-figure brand", country: "Utah, USA" },
   "GHAR SOAPS": { tier: "8-figure brand", country: "UAE" },
-  "MIRAGGIO": { tier: "8-figure brand" },
   "Mateina": { tier: "Andrew Huberman's favourite", country: "Canada" },
-  "Mars By GHC": { tier: "7-figure brand" },
   "Renue By Science": { country: "USA" },
+
+  // --- Indian merchants ---
+  // Names mislead in both directions here (Italian Colony is Bangalore-based;
+  // Haute Sauce is Bengaluru), so the less obvious ones were each confirmed
+  // against the brand's own site or press before being tagged.
+  "MIRAGGIO": { tier: "8-figure brand", country: "India" },
+  "Mars By GHC": { tier: "7-figure brand", country: "India" },
+  "V-Guard Industries Limited": { country: "India" },
+  "bearhouseindia": { country: "India" },
+  "sanskritagain": { country: "India" },
+  "Bacca Bucci": { country: "India" },
+  "HoneyVeda": { country: "India" },
+  "Divinelane": { country: "India" },
+  "Wellbeing Nutrition": { country: "India" },
+  "Wellwith": { country: "India" },
+  "Berry - Wellwithlife": { country: "India" },
+  "Wow - Wellwithlife": { country: "India" },
+  "Paradyes": { country: "India" },
+  "Gully Labs": { country: "India" },
+  "URturms": { country: "India" },
+  "Recode Studios": { country: "India" },
+  "Miniwesst": { country: "India" },
+  "MyBorosil": { country: "India" },
+  "Starquik": { country: "India" },
+  "Westside": { country: "India" },
+  "Westside Global": { country: "India" },
+  "Samoh by TATA": { country: "India" },
+  "Samoh International": { country: "India" },
+  "The Gareeb Store": { country: "India" },
+  "Gladful": { country: "India" },
+  "World of Asaya": { country: "India" },
+  "Haute Sauce": { country: "India" },
+  "Italian Colony": { country: "India" },
+  "Modomu": { country: "India" },
+  "Pinacolada": { country: "India" },
+  "Bonhomie": { country: "India" },
+  "Bichhavans": { country: "India" },
+  "Sudathi": { country: "India" },
+  "Muffynn": { country: "India" },
+  "Tuco Kids": { country: "India" },
 };
 
 // number of blank placeholder marks to show while `customerLogos` is empty
