@@ -48,6 +48,14 @@ function LogoItem({ logo }: { logo: CustomerLogo }) {
             {info.tier}
           </span>
         )}
+        {/* Country under the logo, so it reads without hovering. Same amber as the
+            review card / wall of love, but lighter than the tier pill so the
+            hierarchy stays logo → tier → country. */}
+        {info?.country && (
+          <span className="mt-1.5 text-[11px] font-semibold tracking-wide text-[#D97706]">
+            {info.country}
+          </span>
+        )}
       </button>
 
       {/* inline-expanding review — slides open to the right */}
@@ -66,10 +74,9 @@ function LogoItem({ logo }: { logo: CustomerLogo }) {
               Verified Clickpost customer — review coming soon.
             </p>
           )}
+          {/* no country here — it sits under the logo, which is visible at the
+              same time as this panel, so repeating it would just read as a dupe. */}
           <div className="mt-2 text-[13px] font-bold text-foreground">{reviewer}</div>
-          {info?.country && (
-            <div className="text-[12px] font-semibold text-[#D97706]">{info.country}</div>
-          )}
         </div>
       </div>
     </div>
