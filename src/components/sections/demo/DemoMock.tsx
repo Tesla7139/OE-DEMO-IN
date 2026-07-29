@@ -18,6 +18,14 @@ import {
 } from "lucide-react";
 import type { DemoStore, DemoProduct } from "@/lib/site";
 import { COUNTRIES, countryByName, lookupPostal } from "@/lib/regions";
+import {
+  type Addr,
+  DEFAULT_ADDR,
+  DEFAULT_COUNTRY,
+  DEFAULT_EMAIL,
+  DEFAULT_PHONE,
+  VERIFIED_ADDR,
+} from "@/lib/demo-customer";
 import { readableBrand, dedupeByTitle, dedupeExactTitle } from "@/lib/utils";
 import { DemoImg } from "./DemoImg";
 import { ThankYouMap } from "./ThankYouMap";
@@ -31,20 +39,18 @@ type LineItem = DemoProduct & { uid: string; postPurchase?: boolean; dealPrice?:
 /** Price actually charged for a line item (post-purchase upsells are discounted). */
 const priceOf = (i: LineItem) => (i.postPurchase && i.dealPrice != null ? i.dealPrice : i.price);
 type Section = "contact" | "shipping" | "order" | "discount" | "cancel";
-export type Addr = { first: string; last: string; line1: string; city: string; state: string; zip: string };
 
-// Single source of truth for the demo customer, so every surface (editing window,
-// EU withdrawal order-status page, etc.) shows the same order details.
-export const DEFAULT_EMAIL = "tucker.briggs01@gmail.com";
-export const DEFAULT_PHONE = "+1 760-637-2644";
-export const DEFAULT_COUNTRY = "United States";
-export const DEFAULT_ADDR: Addr = { first: "Tucker", last: "Briggs", line1: "4563 Coronado Dr", city: "Oceanside", state: "California", zip: "92057" };
-/** Address-validation mode: Tucker's current address is flagged, then corrected on validate. */
+// The demo customer lives in @/lib/demo-customer so leaf components (ThankYouProducts,
+// OneTapUpsellMock, …) can read it without importing this module back. Re-exported
+// here so existing `from "./DemoMock"` importers keep working.
+export type { Addr };
+export { DEFAULT_EMAIL, DEFAULT_PHONE, DEFAULT_COUNTRY, DEFAULT_ADDR };
+
+/** Address-validation mode: the shopper's address is flagged, then corrected on validate. */
 const FLAGGED_ADDR: Addr = DEFAULT_ADDR;
-const VERIFIED_ADDR: Addr = { first: "Tucker", last: "Briggs", line1: "4563 Coronado Drive", city: "Oceanside", state: "California", zip: "92057-3812" };
 
-const money = (n: number, currency = "USD") =>
-  new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+const money = (n: number, currency = "INR") =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
 
 let counter = 0;
 const uid = () => `li-${counter++}`;
@@ -121,7 +127,7 @@ export function DemoMock({
   onPaid?: () => void;
 }) {
   const brand = readableBrand(store.brandColor);
-  const fmt = (n: number) => money(n, store.currency || "USD");
+  const fmt = (n: number) => money(n, store.currency || "INR");
 
   // The order starts with two distinct items (so a quantity edit can also remove one);
   // remaining products become the in-page cross-sell suggestions.
@@ -146,7 +152,7 @@ export function DemoMock({
   });
   const [open, setOpen] = useState<Section | null>(initialOpen);
   const [addrValidated, setAddrValidated] = useState(false);
-  const [country, setCountry] = useState("United States");
+  const [country, setCountry] = useState(DEFAULT_COUNTRY);
   const [validating, setValidating] = useState(false);
   const zipTouched = useRef(false); // only auto-detect once the user actually edits the postal code
   const lastDetected = useRef(""); // postal code we last resolved (avoid re-firing)
@@ -255,10 +261,11 @@ export function DemoMock({
   const baseSubtotal = useMemo(() => cartProducts.reduce((s, p) => s + (p.price ?? 0), 0), [cartProducts]);
   const cheapestUpsell = useMemo(() => {
     const prices = upsellPool.map((p) => p.price ?? 0).filter((n) => n > 0);
-    return prices.length ? Math.min(...prices) : Math.max(50, Math.round(baseSubtotal * 0.15));
+    return prices.length ? Math.min(...prices) : Math.max(499, Math.round(baseSubtotal * 0.15));
   }, [upsellPool, baseSubtotal]);
   const freeShipAt = baseSubtotal + cheapestUpsell;
-  const shipFee = useMemo(() => Math.max(3, Math.round((baseSubtotal * 0.04) / 5) * 5), [baseSubtotal]);
+  // ₹-scaled: a ₹49 floor rounded to the nearest ₹10, the way Indian D2C stores quote shipping.
+  const shipFee = useMemo(() => Math.max(49, Math.round((baseSubtotal * 0.04) / 10) * 10), [baseSubtotal]);
   const freeShip = subtotal >= freeShipAt;
   const shipping = cancelled || freeShip ? 0 : shipFee;
 
@@ -274,34 +281,25 @@ export function DemoMock({
     (flash as unknown as { _t?: number })._t = window.setTimeout(() => setToast(null), 2200);
   };
 
-  // Auto-detect city + state from the postal code as the user types (debounced,
-  // free Zippopotam lookup). Disabled during the scripted tour so it never fights
-  // the guided flow; only runs after the user actually edits the postal field.
+  // Auto-detect city + state from the PIN code as the user types (debounced, free
+  // Zippopotam lookup). Disabled during the scripted tour so it never fights the
+  // guided flow; only runs after the user actually edits the PIN field, and only
+  // once all 6 digits are in — partial PINs never resolve.
   useEffect(() => {
     if (scriptedValidation || !zipTouched.current) return;
     const zip = addr.zip.replace(/\s/g, "");
-    if (zip.length < 3) return;
+    if (zip.length < countryByName(country).zipLen) return;
     let cancelled = false;
     const t = window.setTimeout(async () => {
       if (cancelled || lastDetected.current === zip) return;
-      // try the selected country first, then the others — so typing any PIN also
-      // auto-detects the right country (e.g. an Indian PIN while "US" is selected).
-      const order = [country, ...COUNTRIES.map((c) => c.name).filter((n) => n !== country)];
-      for (const cn of order) {
-        const hit = await lookupPostal(cn, addr.zip);
-        if (cancelled) return;
-        if (hit && (hit.city || hit.region)) {
-          lastDetected.current = zip;
-          if (cn !== country) setCountry(cn);
-          // auto-fill only — detecting a city from a PIN is NOT address verification,
-          // so don't flip the "verified" state or show a popup.
-          setAddr((a) => ({ ...a, city: hit.city || a.city, state: hit.region || a.state }));
-          return;
-        }
-      }
+      const hit = await lookupPostal(country, addr.zip);
+      if (cancelled || !hit || !(hit.city || hit.region)) return;
+      lastDetected.current = zip;
+      // auto-fill only — detecting a city from a PIN is NOT address verification,
+      // so don't flip the "verified" state or show a popup.
+      setAddr((a) => ({ ...a, city: hit.city || a.city, state: hit.region || a.state }));
     }, 300);
     return () => { cancelled = true; window.clearTimeout(t); };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [addr.zip, country, scriptedValidation]);
 
   // Signature of the order (which lines + their quantities). Captured once at
@@ -373,7 +371,7 @@ export function DemoMock({
                   {pageContext === "orderstatus" ? "Order #JDTNH5Z6N" : "Confirmation #JDTNH5Z6N"}
                 </div>
                 <div className="text-lg font-bold text-neutral-900">
-                  {pageContext === "orderstatus" ? "Your order status" : "Thank you, Tucker!"}
+                  {pageContext === "orderstatus" ? "Your order status" : `Thank you, ${DEFAULT_ADDR.first}!`}
                 </div>
               </div>
             </div>
@@ -487,7 +485,7 @@ export function DemoMock({
                           <div className="grid grid-cols-2 gap-2.5 lg:grid-cols-3">
                             <Field label="City" value={addr.city} onChange={(v) => setAddr({ ...addr, city: v })} emphasize={emphasis.city || formEmphasis} invalid={addrFlagged} valid={addrValidated} />
                             <SelectInput label={countryByName(country).regionLabel} value={addr.state} onChange={(v) => setAddr({ ...addr, state: v })} options={countryByName(country).regions} emphasize={emphasis.city || formEmphasis} />
-                            <Field label="Postal Code" value={addr.zip} onChange={(v) => { zipTouched.current = true; setAddr({ ...addr, zip: v }); }} emphasize={emphasis.zip || formEmphasis} invalid={addrFlagged} valid={addrValidated} error={addrFlagged ? "Postal code could not be validated." : undefined} />
+                            <Field label="PIN Code" value={addr.zip} onChange={(v) => { zipTouched.current = true; setAddr({ ...addr, zip: v }); }} emphasize={emphasis.zip || formEmphasis} invalid={addrFlagged} valid={addrValidated} error={addrFlagged ? "PIN code could not be validated." : undefined} />
                           </div>
                         </div>
                         <div ref={tourRefs?.saveBtn}>
@@ -508,8 +506,8 @@ export function DemoMock({
                               const hit = await lookupPostal(country, addr.zip);
                               setValidating(false);
                               if (!hit) {
-                                // postal code doesn't exist for the selected country → NOT deliverable
-                                flash(`Couldn't verify ${addr.zip || "that postal code"} in ${country}.`);
+                                // PIN doesn't exist → NOT deliverable
+                                flash(`Couldn't verify PIN ${addr.zip || "code"} in ${country}.`);
                                 return; // stay flagged; do NOT mark verified
                               }
                               const cityWrong = hit.city && hit.city.toLowerCase() !== addr.city.trim().toLowerCase();
@@ -639,7 +637,7 @@ export function DemoMock({
             {/* order details summary */}
             {!cancelled && (
               <div className="mt-3">
-                <OrderDetails addr={addr} email={email} phone={phone} country={DEFAULT_COUNTRY} amount={`${fmt(cancelled ? 0 : subtotal + shipping)} ${store.currency || "USD"}`} />
+                <OrderDetails addr={addr} email={email} phone={phone} country={DEFAULT_COUNTRY} amount={`${fmt(cancelled ? 0 : subtotal + shipping)} ${store.currency || "INR"}`} />
               </div>
             )}
             </>
@@ -984,7 +982,7 @@ function OneTapPanel({
 
       {/* "before you go" banner */}
       <div className="flex items-center gap-3 rounded-lg bg-neutral-50 py-2.5 text-center text-[13px] text-neutral-700">
-        <span className="flex-1 text-center font-semibold">Tucker, before you go!</span>
+        <span className="flex-1 text-center font-semibold">{DEFAULT_ADDR.first}, before you go!</span>
         <span className="mr-3 font-semibold tabular-nums text-red-500">{timer}</span>
       </div>
 

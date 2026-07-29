@@ -33,14 +33,15 @@ function fibonacciSphere(n: number, r: number) {
   return positions;
 }
 
-// Endpoints for "orders saved" arcs (deterministic, no randomness)
+// Endpoints for "orders saved" arcs (deterministic, no randomness).
+// Domestic Indian lanes — the routes an Indian D2C brand actually ships.
 const ARC_ENDPOINTS: [number, number, number, number][] = [
-  [30.27, -97.74, 38.72, -9.13], // Austin -> Lisbon
-  [52.52, 13.4, 19.07, 72.87], // Berlin -> Mumbai
-  [43.65, -79.38, -33.86, 151.2], // Toronto -> Sydney
-  [40.71, -74.0, 51.5, -0.12], // NYC -> London
-  [1.35, 103.81, 35.68, 139.69], // Singapore -> Tokyo
-  [-23.55, -46.63, 28.61, 77.2], // Sao Paulo -> Delhi
+  [28.61, 77.2, 19.08, 72.88], // Delhi -> Mumbai
+  [12.97, 77.59, 28.61, 77.2], // Bengaluru -> Delhi
+  [19.08, 72.88, 22.57, 88.36], // Mumbai -> Kolkata
+  [17.39, 78.49, 13.08, 80.27], // Hyderabad -> Chennai
+  [18.52, 73.86, 26.91, 75.79], // Pune -> Jaipur
+  [23.02, 72.57, 12.97, 77.59], // Ahmedabad -> Bengaluru
 ];
 
 function buildArc(latA: number, lonA: number, latB: number, lonB: number, r: number) {

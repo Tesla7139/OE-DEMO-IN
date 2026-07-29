@@ -223,13 +223,13 @@ function LoadingView({ label }: { label: string }) {
 }
 
 const TICKETS = [
-  { subject: "Can I change delivery date?",        email: "anna.ko@hotmail.com", time: "22m ago", hot: false },
-  { subject: "Ordered wrong, too late to switch?", email: "tom.baker@gmail.com", time: "25m ago", hot: true },
-  { subject: "Typed my email wrong on checkout",   email: "nina.s@yahoo.com",    time: "31m ago", hot: false },
-  { subject: "Need to add an item to my order",    email: "raj.m@gmail.com",     time: "34m ago", hot: true },
-  { subject: "Wrong size, can I swap it?",         email: "lea.f@outlook.com",   time: "39m ago", hot: false },
-  { subject: "Forgot to apply my discount code",   email: "mike.d@gmail.com",    time: "42m ago", hot: false },
-  { subject: "Want to cancel my order",            email: "sara.p@yahoo.com",    time: "47m ago", hot: true },
+  { subject: "Can I change delivery date?",        email: "ananya.k@hotmail.com", time: "22m ago", hot: false },
+  { subject: "Ordered wrong, too late to switch?", email: "rohan.mehta@gmail.com", time: "25m ago", hot: true },
+  { subject: "Typed my email wrong on checkout",   email: "nisha.s@yahoo.com",    time: "31m ago", hot: false },
+  { subject: "Need to add an item to my order",    email: "raj.m@gmail.com",      time: "34m ago", hot: true },
+  { subject: "Wrong size, can I swap it?",         email: "kavya.iyer@outlook.com", time: "39m ago", hot: false },
+  { subject: "Please update my PIN code",          email: "arjun.d@gmail.com",    time: "42m ago", hot: false },
+  { subject: "Want to cancel my order",            email: "sanya.p@yahoo.com",    time: "47m ago", hot: true },
 ];
 
 /* ----------------------------- Welcome ----------------------------- */

@@ -54,16 +54,16 @@ const plans: Plan[] = [
   },
   {
     volume: "500–5,000 orders/m",
-    price: "49",
-    yearlyPrice: "49",
+    price: "3999",
+    yearlyPrice: "3999",
     sub: "unlimited order edits + upsells",
     features: GROWTH_FEATURES,
     trial: "14-day free trial",
   },
   {
     volume: "5,000–15,000 orders/m",
-    price: "129",
-    yearlyPrice: "129",
+    price: "9999",
+    yearlyPrice: "9999",
     sub: "unlimited order edits + upsells",
     features: [...GROWTH_FEATURES, "Phone-call Support", "Dedicated Success Manager"],
     trial: "14-day free trial",
@@ -134,7 +134,8 @@ export function Pricing() {
                     <span className="text-4xl font-bold tracking-tight text-foreground tabular-nums">
                       <NumberFlow
                         value={value}
-                        format={{ style: "currency", currency: "USD", maximumFractionDigits: 0 }}
+                        locales="en-IN"
+                        format={{ style: "currency", currency: "INR", maximumFractionDigits: 0 }}
                         transformTiming={{ duration: 500, easing: "ease-out" }}
                         willChange
                       />
@@ -172,7 +173,7 @@ export function Pricing() {
         </RevealGroup>
 
         <p className="mt-10 text-center text-sm text-muted-foreground">
-          All charges are billed in USD. Recurring and usage-based charges are billed every 30 days.
+          All charges are billed in INR. Recurring and usage-based charges are billed every 30 days.
         </p>
       </Container>
     </section>

@@ -6,8 +6,8 @@ import type { DemoStore, DemoProduct } from "@/lib/site";
 import { TooGoodToMiss } from "./TooGoodToMiss";
 import { DemoImg } from "./DemoImg";
 
-const money = (n: number, currency = "USD") =>
-  new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+const money = (n: number, currency = "INR") =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
 
 function Img({ src, className }: { src?: string | null; className: string }) {
   return <DemoImg src={src} className={className} />;
@@ -80,7 +80,7 @@ export function ThankYouUpsell({
   shipBoxRef?: React.RefObject<HTMLDivElement | null>;
   shipAddBtnRef?: React.RefObject<HTMLButtonElement | null>;
 }) {
-  const fmt = (n: number) => money(n, store.currency || "USD");
+  const fmt = (n: number) => money(n, store.currency || "INR");
   const featured = products[products.length - 1] ?? products[0];
 
   const showShipBar = typeof subtotal === "number" && typeof freeShipAt === "number" && freeShipAt > 0;
@@ -94,7 +94,7 @@ export function ThankYouUpsell({
   const bestSellers = pool.slice(0, half);
   const moreItems = pool.slice(half).length ? pool.slice(half) : pool;
 
-  const currency = store.currency || "USD";
+  const currency = store.currency || "INR";
 
   return (
     <div className="flex flex-col gap-4">

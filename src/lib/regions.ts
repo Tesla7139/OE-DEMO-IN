@@ -8,36 +8,9 @@ export type CountryData = {
   regions: string[];
 };
 
+// India-only demo. All 28 states + 8 union territories, PIN codes are 6 digits,
+// and Zippopotam's "in" dataset backs the live lookup.
 export const COUNTRIES: CountryData[] = [
-  {
-    name: "United States",
-    zip: "us",
-    regionLabel: "State",
-    zipLen: 5,
-    regions: [
-      "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
-      "Connecticut", "Delaware", "District of Columbia", "Florida", "Georgia",
-      "Hawaii", "Idaho", "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky",
-      "Louisiana", "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota",
-      "Mississippi", "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire",
-      "New Jersey", "New Mexico", "New York", "North Carolina", "North Dakota",
-      "Ohio", "Oklahoma", "Oregon", "Pennsylvania", "Rhode Island",
-      "South Carolina", "South Dakota", "Tennessee", "Texas", "Utah", "Vermont",
-      "Virginia", "Washington", "West Virginia", "Wisconsin", "Wyoming",
-    ],
-  },
-  {
-    name: "Canada",
-    zip: "ca",
-    regionLabel: "Province",
-    zipLen: 3,
-    regions: [
-      "Alberta", "British Columbia", "Manitoba", "New Brunswick",
-      "Newfoundland and Labrador", "Northwest Territories", "Nova Scotia",
-      "Nunavut", "Ontario", "Prince Edward Island", "Quebec", "Saskatchewan",
-      "Yukon",
-    ],
-  },
   {
     name: "India",
     zip: "in",
@@ -52,30 +25,6 @@ export const COUNTRIES: CountryData[] = [
       "Andaman and Nicobar Islands", "Chandigarh",
       "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Jammu and Kashmir",
       "Ladakh", "Lakshadweep", "Puducherry",
-    ],
-  },
-  {
-    name: "Germany",
-    zip: "de",
-    regionLabel: "State",
-    zipLen: 5,
-    regions: [
-      "Baden-Württemberg", "Bavaria", "Berlin", "Brandenburg", "Bremen",
-      "Hamburg", "Hesse", "Lower Saxony", "Mecklenburg-Vorpommern",
-      "North Rhine-Westphalia", "Rhineland-Palatinate", "Saarland", "Saxony",
-      "Saxony-Anhalt", "Schleswig-Holstein", "Thuringia",
-    ],
-  },
-  {
-    name: "France",
-    zip: "fr",
-    regionLabel: "Region",
-    zipLen: 5,
-    regions: [
-      "Auvergne-Rhône-Alpes", "Bourgogne-Franche-Comté", "Brittany",
-      "Centre-Val de Loire", "Corsica", "Grand Est", "Hauts-de-France",
-      "Île-de-France", "Normandy", "Nouvelle-Aquitaine", "Occitanie",
-      "Pays de la Loire", "Provence-Alpes-Côte d'Azur",
     ],
   },
 ];
@@ -93,9 +42,8 @@ export async function lookupPostal(
   postal: string
 ): Promise<{ city: string; region: string } | null> {
   const c = countryByName(countryName);
-  const raw = postal.trim().toUpperCase();
-  // Canada validates on the 3-char FSA (e.g. "M5V"); others use the code up to a "-"/space.
-  const code = c.zip === "ca" ? raw.replace(/\s/g, "").slice(0, 3) : raw.split(/[-\s]/)[0];
+  // Indian PINs are 6 digits, sometimes written "110 024" — strip spaces before lookup.
+  const code = postal.trim().replace(/\s/g, "");
   if (!code) return null;
   try {
     const res = await fetch(`https://api.zippopotam.us/${c.zip}/${encodeURIComponent(code)}`);

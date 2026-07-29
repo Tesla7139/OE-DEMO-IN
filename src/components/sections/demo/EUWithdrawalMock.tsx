@@ -4,15 +4,16 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ArrowLeft, Check, ChevronDown, HelpCircle, Truck } from "lucide-react";
 import type { DemoStore } from "@/lib/site";
-import { DEFAULT_ADDR, DEFAULT_EMAIL, DEFAULT_PHONE, DEFAULT_COUNTRY } from "./DemoMock";
+import { DEFAULT_ADDR, DEFAULT_EMAIL, DEFAULT_PHONE, DEFAULT_COUNTRY } from "@/lib/demo-customer";
 import { DemoImg } from "./DemoImg";
 
-const money = (n: number, currency = "USD") =>
-  new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+const money = (n: number, currency = "INR") =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
 
 // same customer/order details as the main order-editing window
 const CUSTOMER = `${DEFAULT_ADDR.first} ${DEFAULT_ADDR.last}`;
-const ADDR_LINES = [CUSTOMER, DEFAULT_ADDR.line1, `${DEFAULT_ADDR.city}, ${DEFAULT_ADDR.state} ${DEFAULT_ADDR.zip}`, DEFAULT_COUNTRY];
+// Indian convention writes the PIN after a hyphen: "New Delhi, Delhi - 110025".
+const ADDR_LINES = [CUSTOMER, DEFAULT_ADDR.line1, `${DEFAULT_ADDR.city}, ${DEFAULT_ADDR.state} - ${DEFAULT_ADDR.zip}`, DEFAULT_COUNTRY];
 const TRACKING = "JAM8470GB72670273201";
 
 function Thumb({ src, alt }: { src?: string | null; alt: string }) {
@@ -93,11 +94,11 @@ type EUTourRefs = {
 const WITHDRAWAL_MESSAGE = "I'd like to withdraw from this purchase within the cooling-off period.";
 
 export function EUWithdrawalMock({ store, tourRefs, autoFill = 0, manualFill = false, onWithdrawOpened, onWithdrawn }: { store: DemoStore; tourRefs?: EUTourRefs; autoFill?: number; manualFill?: boolean; onWithdrawOpened?: () => void; onWithdrawn?: () => void }) {
-  const currency = store.currency || "USD";
+  const currency = store.currency || "INR";
   const fmt = (n: number) => money(n, currency);
   const product = store.products.find((p) => (p.price ?? 0) > 0) ?? store.products[0];
-  const price = product?.price ?? 95;
-  const shipping = 7;
+  const price = product?.price ?? 1499;
+  const shipping = 99;
   const total = price + shipping;
 
   const [open, setOpen] = useState(false);

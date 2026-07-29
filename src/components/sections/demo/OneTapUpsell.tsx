@@ -7,7 +7,9 @@ import type { DemoStore } from "@/lib/site";
 import { DemoImg } from "./DemoImg";
 
 const ACCENT = "#155FFF";
-const money = (n: number) => `$${n.toFixed(2)}`;
+// Indian pricing is quoted in whole rupees with lakh grouping — no paise.
+const money = (n: number) =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 
 /** One-tap post-purchase upsell shown right after confirmation (no re-payment). */
 export function OneTapUpsell({
@@ -22,8 +24,8 @@ export function OneTapUpsell({
   onSkip: () => void;
 }) {
   const offer = store.products[1] ?? store.products[0];
-  const full = offer?.price || 12;
-  const deal = Math.max(1, Math.round(full * 0.5 * 100) / 100);
+  const full = offer?.price || 1299;
+  const deal = Math.max(1, Math.round(full * 0.5));
 
   const [left, setLeft] = useState(9 * 60 + 54);
   useEffect(() => {
@@ -144,7 +146,7 @@ export function OneTapUpsell({
                     className="w-full rounded-lg py-3 text-sm font-semibold text-white transition-all hover:brightness-110 active:scale-[0.99]"
                     style={{ background: ACCENT }}
                   >
-                    Add to order · {money(deal)} USD
+                    Add to order · {money(deal)} INR
                   </button>
                   {/* finger-tap hint */}
                   <div className="pointer-events-none absolute -bottom-3 left-1/2 z-20 flex -translate-x-1/2 flex-col items-center">

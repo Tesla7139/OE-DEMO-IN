@@ -31,7 +31,7 @@ export const site = {
   name: "Clickpost", // brand wordmark (logo slot left intentionally empty in UI)
   product: "Order Editing & Upsell",
   tagline: "Let shoppers fix their own orders.",
-  phone: "+1 (000) 000-0000", // TODO: replace with real number
+  phone: "+91 00000 00000", // TODO: replace with real number
   email: "hello@clickpost.ai", // TODO: confirm
 };
 
@@ -398,13 +398,13 @@ export const pricing = [
     name: "Starter",
     price: "Free",
     detail: "0–500 orders/mo",
-    features: ["25 free edits / month", "Then $1 / edit", "Core editing & cancellations"],
+    features: ["25 free edits / month", "Then ₹80 / edit", "Core editing & cancellations"],
     cta: "Start free",
     highlighted: false,
   },
   {
     name: "Growth",
-    price: "$49",
+    price: "₹3,999",
     detail: "per month · 500–5,000 orders/mo",
     features: ["Unlimited edits", "Post-purchase upsells", "Address validation"],
     cta: "Start 14-day trial",
@@ -412,7 +412,7 @@ export const pricing = [
   },
   {
     name: "Scale",
-    price: "$129",
+    price: "₹9,999",
     detail: "per month · 5,000–20,000 orders/mo",
     features: ["Everything in Growth", "Dedicated account manager", "Priority support"],
     cta: "Start 14-day trial",
@@ -440,7 +440,7 @@ export const faqs = [
   },
   {
     q: "How much does it cost?",
-    a: "Start free for up to 500 orders/month. Paid plans begin at $49/month with a 14-day free trial. See the pricing section above for details.",
+    a: "Start free for up to 500 orders/month. Paid plans begin at ₹3,999/month with a 14-day free trial. See the pricing section above for details.",
   },
 ];
 
@@ -495,25 +495,25 @@ export type DemoStore = {
 // most fallbacks are Indian D2C stores; the currency follows store.currency).
 const UNSPLASH = (id: string) => `https://images.unsplash.com/photo-${id}?w=600&q=80&auto=format&fit=crop`;
 export const mockStore: DemoStore = {
-  brandName: "Northwind Goods",
+  brandName: "Nira & Co.",
   brandColor: "#1f7a5a",
-  currency: "USD",
+  currency: "INR",
   products: [
-    { id: "p1", title: "Everyday Glow Makeup Set", variant: "Full kit", price: 29, qty: 1, image: UNSPLASH("1596462502278-27bfdc403348") },
-    { id: "p2", title: "Flowy Evening Gown", variant: "Red · M", price: 54, qty: 1, image: UNSPLASH("1595777457583-95e059d581b8") },
-    { id: "p3", title: "Vitamin C Face Serum", variant: "30 ml", price: 19, qty: 1, image: UNSPLASH("1631730359585-38a4935cbec4") },
-    { id: "p4", title: "Structured Leather Handbag", variant: "Coral", price: 69, qty: 1, image: UNSPLASH("1584917865442-de89df76afd3") },
-    { id: "p5", title: "Nourishing Body Lotion", variant: "200 ml", price: 14, qty: 1, image: UNSPLASH("1620916566398-39f1143ab7be") },
-    { id: "p6", title: "Round Metal Sunglasses", variant: "Gold", price: 24, qty: 1, image: UNSPLASH("1511499767150-a48a237f0083") },
+    { id: "p1", title: "Everyday Glow Makeup Set", variant: "Full kit", price: 2499, qty: 1, image: UNSPLASH("1596462502278-27bfdc403348") },
+    { id: "p2", title: "Flowy Evening Gown", variant: "Red · M", price: 4499, qty: 1, image: UNSPLASH("1595777457583-95e059d581b8") },
+    { id: "p3", title: "Vitamin C Face Serum", variant: "30 ml", price: 899, qty: 1, image: UNSPLASH("1631730359585-38a4935cbec4") },
+    { id: "p4", title: "Structured Leather Handbag", variant: "Coral", price: 5999, qty: 1, image: UNSPLASH("1584917865442-de89df76afd3") },
+    { id: "p5", title: "Nourishing Body Lotion", variant: "200 ml", price: 649, qty: 1, image: UNSPLASH("1620916566398-39f1143ab7be") },
+    { id: "p6", title: "Round Metal Sunglasses", variant: "Gold", price: 1899, qty: 1, image: UNSPLASH("1511499767150-a48a237f0083") },
   ],
 };
 
 // Globe arc events ("orders saved" narrative) — placeholder data
 export const globeEvents = [
-  { label: "Address corrected", city: "Austin, TX" },
-  { label: "Order edited", city: "Lisbon" },
-  { label: "Upsell accepted", city: "Berlin" },
-  { label: "Cancellation avoided", city: "Mumbai" },
-  { label: "Variant swapped", city: "Toronto" },
-  { label: "Address corrected", city: "Sydney" },
+  { label: "Address corrected", city: "Bengaluru" },
+  { label: "Order edited", city: "Mumbai" },
+  { label: "Upsell accepted", city: "New Delhi" },
+  { label: "Cancellation avoided", city: "Hyderabad" },
+  { label: "Variant swapped", city: "Pune" },
+  { label: "Address corrected", city: "Jaipur" },
 ];

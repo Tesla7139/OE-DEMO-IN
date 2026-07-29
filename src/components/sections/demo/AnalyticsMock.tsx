@@ -6,11 +6,12 @@ import type { DemoStore, DemoProduct } from "@/lib/site";
 
 const TEAL = "#0d9488";
 
+// en-IN gives lakh/crore digit grouping (₹1,20,000 not ₹120,000).
 function amount(n: number, currency: string) {
-  return `${currency} ${new Intl.NumberFormat("en", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)}`;
+  return `${currency} ${new Intl.NumberFormat("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(n)}`;
 }
 function price(n: number, currency: string) {
-  return new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+  return new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
 }
 
 const X_LABELS = ["Jun 1", "Jun 4", "Jun 7", "Jun 10", "Jun 13", "Jun 16", "Jun 19", "Jun 22", "Jun 25", "Jun 28"];
@@ -74,7 +75,7 @@ export function AnalyticsMock({ store, viewTab, tourRefs }: { store: DemoStore; 
   const [innerTab, setInnerTab] = useState<AnalyticsView>("overview");
   const tab = viewTab ?? innerTab;
   const setTab = setInnerTab;
-  const currency = store.currency || "USD";
+  const currency = store.currency || "INR";
   const products: DemoProduct[] = store.products.filter((p) => (p.price ?? 0) > 0);
 
   // --- edits ---

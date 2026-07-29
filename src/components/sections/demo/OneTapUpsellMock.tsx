@@ -5,14 +5,15 @@ import { motion } from "framer-motion";
 import { Check, ChevronDown } from "lucide-react";
 import type { DemoStore, DemoProduct } from "@/lib/site";
 import { readableBrand, dedupeExactTitle } from "@/lib/utils";
+import { DEFAULT_ADDR } from "@/lib/demo-customer";
 import { DemoImg } from "./DemoImg";
 
-const money = (n: number, currency = "USD") =>
-  new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+const money = (n: number, currency = "INR") =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
 
 export function OneTapUpsellMock({ store, onComplete, onViewOrder, accentColor, addBtnRef, offerRef, onAdded }: { store: DemoStore; onComplete?: (added: DemoProduct[]) => void; onViewOrder?: () => void; accentColor?: string; addBtnRef?: React.RefObject<HTMLButtonElement | null>; offerRef?: React.RefObject<HTMLDivElement | null>; onAdded?: () => void }) {
   const brand = readableBrand(store.brandColor || accentColor);
-  const currency = store.currency || "USD";
+  const currency = store.currency || "INR";
   const fmt = (n: number) => money(n, currency);
   const priced = store.products.filter((p) => (p.price ?? 0) > 0);
   // keep colour variants so there's enough variety for 3 distinct offers
@@ -91,7 +92,7 @@ export function OneTapUpsellMock({ store, onComplete, onViewOrder, accentColor, 
             </span>
             <div>
               <div className="text-xs text-neutral-500">Confirmation #0WP59XCW8</div>
-              <div className="text-lg font-bold text-neutral-900">Thank you, Tucker!</div>
+              <div className="text-lg font-bold text-neutral-900">Thank you, {DEFAULT_ADDR.first}!</div>
             </div>
           </div>
           <button onClick={onViewOrder} className="mt-2 text-[12px] font-medium text-neutral-900">
@@ -101,7 +102,7 @@ export function OneTapUpsellMock({ store, onComplete, onViewOrder, accentColor, 
 
         {/* before-you-go header */}
         <div className="border-b border-border px-6 py-2.5 text-center">
-          <div className="text-[16px] font-bold text-neutral-900">Tucker, before you go!</div>
+          <div className="text-[16px] font-bold text-neutral-900">{DEFAULT_ADDR.first}, before you go!</div>
           <div className="mt-1 text-[12.5px] text-neutral-600">
             Your order is confirmed but you can still add the following for a limited time{" "}
             <span className="font-bold tabular-nums text-red-500">{timer}</span>

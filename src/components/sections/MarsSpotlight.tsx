@@ -12,7 +12,7 @@ const STATS = [
     detail: "Customers corrected addresses, swapped variants, and applied discounts — without emailing support once.",
   },
   {
-    figure: "$11,713",
+    figure: "₹9.7L",
     label: "in upsell revenue",
     detail: "Generated directly on the post-purchase thank-you page. No ad spend. No new checkout friction.",
   },

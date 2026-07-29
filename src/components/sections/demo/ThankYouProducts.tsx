@@ -2,10 +2,11 @@
 
 import { Check } from "lucide-react";
 import type { DemoStore, DemoProduct } from "@/lib/site";
+import { DEFAULT_ADDR } from "@/lib/demo-customer";
 import { DemoImg } from "./DemoImg";
 
-const money = (n: number, currency = "USD") =>
-  new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+const money = (n: number, currency = "INR") =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
 
 function ProductImg({ src, alt }: { src?: string | null; alt: string }) {
   return <DemoImg src={src} alt={alt} className="size-full object-cover" />;
@@ -33,7 +34,7 @@ export function ThankYouProducts({
   gridRef?: React.RefObject<HTMLDivElement | null>;
   addBtnRef?: React.RefObject<HTMLButtonElement | null>;
 }) {
-  const fmt = (n: number) => money(n, store.currency || "USD");
+  const fmt = (n: number) => money(n, store.currency || "INR");
   const deal = (n: number) => Math.max(1, Math.round(n * 0.5)); // post-purchase offer = 50% off
 
   if (layout === "page") {
@@ -81,7 +82,7 @@ export function ThankYouProducts({
           </span>
           <div>
             <div className="text-xs text-neutral-500">Order #JDTNH5Z6N confirmed</div>
-            <div className="text-[15px] font-bold text-neutral-900">Thank you, Tucker!</div>
+            <div className="text-[15px] font-bold text-neutral-900">Thank you, {DEFAULT_ADDR.first}!</div>
           </div>
         </div>
       </div>

@@ -3,8 +3,8 @@
 import type { DemoStore, DemoProduct } from "@/lib/site";
 import { DemoImg } from "./DemoImg";
 
-const money = (n: number, currency = "USD") =>
-  new Intl.NumberFormat("en", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+const money = (n: number, currency = "INR") =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
 
 /** A single discounted "Too good to miss!" featured deal. */
 export function TooGoodToMiss({
@@ -18,7 +18,7 @@ export function TooGoodToMiss({
   product: DemoProduct;
   onAdd: (p: DemoProduct) => void;
 }) {
-  const fmt = (n: number) => money(n, store.currency || "USD");
+  const fmt = (n: number) => money(n, store.currency || "INR");
   const deal = Math.max(1, Math.round(product.price * 0.5));
 
   return (

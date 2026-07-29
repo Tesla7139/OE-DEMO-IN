@@ -3,10 +3,16 @@
 import { CreditCard } from "lucide-react";
 import type { Addr } from "./DemoMock";
 
+// Official Indian state/UT codes (the ones used on GST registrations and courier
+// manifests). Anything unmapped falls through to the full name.
 const STATE_ABBR: Record<string, string> = {
-  California: "CA", "New York": "NY", Texas: "TX", Florida: "FL", Washington: "WA",
-  Illinois: "IL", Massachusetts: "MA", Georgia: "GA", Colorado: "CO", Oregon: "OR",
-  Arizona: "AZ", Nevada: "NV", Pennsylvania: "PA", Ohio: "OH", Michigan: "MI",
+  Delhi: "DL", Maharashtra: "MH", Karnataka: "KA", "Tamil Nadu": "TN",
+  Telangana: "TG", Gujarat: "GJ", Rajasthan: "RJ", "West Bengal": "WB",
+  "Uttar Pradesh": "UP", Haryana: "HR", Punjab: "PB", Kerala: "KL",
+  "Madhya Pradesh": "MP", Bihar: "BR", Odisha: "OD", "Andhra Pradesh": "AP",
+  Assam: "AS", Jharkhand: "JH", Chhattisgarh: "CG", Uttarakhand: "UK",
+  "Himachal Pradesh": "HP", Goa: "GA", Chandigarh: "CH", Puducherry: "PY",
+  "Jammu and Kashmir": "JK",
 };
 const region = (s: string) => STATE_ABBR[s] ?? s;
 
@@ -36,7 +42,7 @@ export function OrderDetails({
   const lines = [
     `${addr.first} ${addr.last}`,
     addr.line1,
-    `${addr.city} ${region(addr.state)} ${addr.zip}`,
+    `${addr.city} ${region(addr.state)} - ${addr.zip}`,
     country,
     phone,
   ];

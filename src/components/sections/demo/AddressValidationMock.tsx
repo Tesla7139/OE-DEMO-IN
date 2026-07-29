@@ -12,13 +12,16 @@ type Fields = {
   firstName: string; lastName: string; address1: string; address2: string;
   city: string; state: string; zip: string; country: string;
 };
+// What the shopper typed vs. what Google resolves it to: the abbreviated street
+// line is expanded and the neighbouring PIN (110025 is Lajpat Nagar IV) is fixed
+// to the one that actually serves Lajpat Nagar II.
 const ENTERED: Fields = {
-  firstName: "Mohit", lastName: "Jain", address1: "123, Main Street", address2: "",
-  city: "New York", state: "New York", zip: "10044", country: "United States",
+  firstName: "Mohit", lastName: "Jain", address1: "H-14, 2nd Flr, Lajpat Ngr II", address2: "",
+  city: "New Delhi", state: "Delhi", zip: "110025", country: "India",
 };
 const CORRECTED: Fields = {
-  firstName: "Mohit", lastName: "Jain", address1: "123 Main St", address2: "",
-  city: "New York", state: "New York", zip: "10044-1601", country: "United States",
+  firstName: "Mohit", lastName: "Jain", address1: "H-14, Second Floor, Lajpat Nagar II", address2: "",
+  city: "New Delhi", state: "Delhi", zip: "110024", country: "India",
 };
 
 /** The four-colour Google "G". */
@@ -124,13 +127,13 @@ export function AddressValidationMock({ store, tourRefs, onValidated, onConfirme
             <Field label="Address 2" value={f.address2} />
             <div className="grid grid-cols-2 gap-3 lg:grid-cols-3">
               <Field label="City" value={f.city} />
-              <Field label="Province / State" value={f.state} chevron />
+              <Field label="State" value={f.state} chevron />
               <Field
-                label="Postal Code"
+                label="PIN Code"
                 value={f.zip}
                 invalid={flagged}
                 valid={verified}
-                error={flagged ? "Postal code could not be validated." : undefined}
+                error={flagged ? "PIN code could not be validated." : undefined}
               />
             </div>
           </motion.div>
@@ -163,7 +166,7 @@ export function AddressValidationMock({ store, tourRefs, onValidated, onConfirme
                   <span className="min-w-0 text-[13px] leading-relaxed text-neutral-700">
                     <span className="block font-semibold text-neutral-900">{CORRECTED.firstName} {CORRECTED.lastName}</span>
                     <span className="block">{CORRECTED.address1}</span>
-                    <span className="block">{CORRECTED.city}, {CORRECTED.state} {CORRECTED.zip}</span>
+                    <span className="block">{CORRECTED.city}, {CORRECTED.state} - {CORRECTED.zip}</span>
                     <span className="block">{CORRECTED.country}</span>
                   </span>
                 </button>

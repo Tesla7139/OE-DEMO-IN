@@ -49,7 +49,7 @@ export function DemoUrlInput({
             "group relative flex w-full items-center rounded-full border bg-white/95 p-2 shadow-[0_10px_40px_-12px_rgba(15,15,25,0.18)] backdrop-blur-xl transition-all",
             highlight
               ? "border-red-400 ring-4 ring-red-500/25 shadow-[0_14px_50px_-12px_rgba(239,68,68,0.4)]"
-              : "border-border/60 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/20 focus-within:shadow-[0_14px_50px_-12px_rgba(47,91,255,0.3)]"
+              : "border-border/60 focus-within:border-primary focus-within:ring-4 focus-within:ring-primary/30 focus-within:shadow-[0_14px_50px_-12px_rgba(47,91,255,0.3)]"
           )}
         >
           <input
@@ -60,7 +60,7 @@ export function DemoUrlInput({
             value={url}
             onChange={(e) => setUrl(e.target.value)}
             placeholder="Enter your store URL"
-            className="h-10 flex-1 bg-transparent pl-4 pr-2 text-[0.85rem] text-foreground placeholder:text-muted-foreground/70 outline-none focus:outline-none focus-visible:outline-none [&:focus-visible]:outline-none lg:h-14 lg:pl-6 lg:text-[1.05rem]"
+            className="h-10 flex-1 bg-transparent pl-4 pr-2 text-[0.85rem] text-foreground placeholder:text-muted-foreground/70 outline-none focus:!outline-none focus-visible:!outline-none [&:focus-visible]:!outline-none lg:h-14 lg:pl-6 lg:text-[1.05rem]"
             style={{ outline: "none", boxShadow: "none" }}
           />
           <button

@@ -19,7 +19,7 @@ type Tour = "editing" | "upsell" | "address" | "eu-withdrawal";
 type Section = "contact" | "shipping" | "order" | "discount" | "cancel";
 
 /** Address the guided tour drops into the form to demonstrate an edit. */
-const CORRECTED_ADDRESS: Partial<Addr> = { line1: "1820 Seacrest Blvd", city: "Carlsbad", zip: "92008" };
+const CORRECTED_ADDRESS: Partial<Addr> = { line1: "C-42, Greater Kailash I", city: "New Delhi", zip: "110048" };
 
 /** Left-rail features, each with an icon. */
 const NAV_FEATURES: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
@@ -346,12 +346,12 @@ const FINALE: Record<Tab, { action: string; brand: string; stat: string }> = {
   editing: {
     action: "cut support tickets",
     brand: "Doonails",
-    stat: "deflected 58% of “where’s my order” tickets and saved $12K a month.",
+    stat: "deflected 58% of “where’s my order” tickets and saved ₹10L a month.",
   },
   upsell: {
     action: "boost AOV",
     brand: "Mars by GHC",
-    stat: "lifted AOV 23% and added $18K in post-purchase upsell this month.",
+    stat: "lifted AOV 23% and added ₹15L in post-purchase upsell this month.",
   },
   address: {
     action: "stop failed deliveries",

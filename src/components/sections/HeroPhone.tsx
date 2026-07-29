@@ -20,9 +20,11 @@ import {
   X,
   Zap,
 } from "lucide-react";
+import { DEFAULT_ADDR } from "@/lib/demo-customer";
 
 const BRAND = "#2f5bff";
-const money = (n: number) => `$${n.toFixed(2)}`;
+const money = (n: number) =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(n);
 
 /* scene timeline (auto-advancing, looping) */
 const SCENES = ["confirmed", "editing", "address", "upsell", "analytics"] as const;
@@ -120,7 +122,7 @@ export function HeroPhone() {
       <AnimatePresence>
         {scene === "analytics" && (
           <>
-            <FloatCard className="-left-5 top-2" delay={0.15} icon={TrendingUp} value="$4,320" label="Upsell revenue" tint />
+            <FloatCard className="-left-5 top-2" delay={0.15} icon={TrendingUp} value="₹3,58,000" label="Upsell revenue" tint />
             <FloatCard className="-right-6 top-16" delay={0.3} icon={Zap} value="128" label="Upsells accepted" />
             <FloatCard className="-right-2 -bottom-4" delay={0.45} icon={Check} value="412" label="Tickets deflected" />
           </>
@@ -203,7 +205,7 @@ function ConfirmedBody() {
         Confirmation #JDTNH5Z6N
       </div>
       <div className="mt-1 text-lg font-bold text-neutral-900">Order confirmed</div>
-      <p className="mt-1 text-[12px] text-neutral-500">Thank you, Tucker! A receipt is on its way.</p>
+      <p className="mt-1 text-[12px] text-neutral-500">Thank you, {DEFAULT_ADDR.first}! A receipt is on its way.</p>
     </motion.div>
   );
 }
@@ -220,7 +222,7 @@ function EditingBody({ countdown }: { countdown: string }) {
         </span>
         <div className="min-w-0">
           <div className="text-[9px] text-neutral-500">#JDTNH5Z6N</div>
-          <div className="truncate text-[13px] font-bold text-neutral-900">Thank you, Tucker!</div>
+          <div className="truncate text-[13px] font-bold text-neutral-900">Thank you, {DEFAULT_ADDR.first}!</div>
         </div>
       </div>
 
@@ -245,6 +247,13 @@ function EditingBody({ countdown }: { countdown: string }) {
   );
 }
 
+// The address the hero types out on its own. Module-scope so the "still typing"
+// check below stays in sync with the string's real length.
+const TYPED_ADDR = "C-42, Greater Kailash I";
+const TYPED_CITY = "New Delhi";
+const TYPED_PIN = "110048";
+const TYPED_STATE = "Delhi";
+
 function AddressBody({ onSaved }: { onSaved: () => void }) {
   const [address, setAddress] = useState("");
   const [city, setCity] = useState("");
@@ -252,9 +261,9 @@ function AddressBody({ onSaved }: { onSaved: () => void }) {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    const A = "76 Greene Ave";
-    const C = "New York";
-    const Z = "10001";
+    const A = TYPED_ADDR;
+    const C = TYPED_CITY;
+    const Z = TYPED_PIN;
     let ai = 0;
     let ci = 0;
     let zi = 0;
@@ -281,12 +290,12 @@ function AddressBody({ onSaved }: { onSaved: () => void }) {
         <span className="text-[13px] font-bold text-neutral-900">Edit shipping address</span>
       </div>
 
-      <Field label="Address 1" value={address} typing={!saved && address.length < 13} />
+      <Field label="Address 1" value={address} typing={!saved && address.length < TYPED_ADDR.length} />
       <div className="mt-2 grid grid-cols-2 gap-2">
         <Field label="City" value={city} />
-        <Field label="Postal code" value={zip} />
+        <Field label="PIN code" value={zip} />
       </div>
-      <Field label="State" value="New York" className="mt-2" />
+      <Field label="State" value={TYPED_STATE} className="mt-2" />
 
       <button
         className="mt-auto flex w-full items-center justify-center gap-2 rounded-lg py-2.5 text-[12px] font-semibold text-white transition-colors"
@@ -395,7 +404,7 @@ function AnalyticsBody() {
       <p className="mb-3 mt-0.5 text-[10px] text-neutral-500">Updated in real time</p>
 
       <div className="mb-3 grid grid-cols-2 gap-2">
-        <MiniStat label="Revenue added" value="$4.3k" tint />
+        <MiniStat label="Revenue added" value="₹3.6L" tint />
         <MiniStat label="AOV lift" value="+18%" />
       </div>
 

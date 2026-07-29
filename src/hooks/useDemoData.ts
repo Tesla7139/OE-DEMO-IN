@@ -51,7 +51,7 @@ export function useDemoData() {
       brandName: branding?.brandName || deriveBrandName(url) || mockStore.brandName,
       brandColor: branding?.brandColor || mockStore.brandColor,
       logo: branding?.logo || null,
-      currency: branding?.currency || currencyFromUrl(url) || mockStore.currency || "USD",
+      currency: branding?.currency || currencyFromUrl(url) || mockStore.currency || "INR",
       products: fillProducts(branding?.products),
     });
     setStatus("ready");
