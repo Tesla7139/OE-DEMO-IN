@@ -93,6 +93,30 @@ function Row({
   );
 }
 
+/** Sits over the card that started the payment, so it is always in view. */
+function ProcessingOverlay({ show, brand }: { show: boolean; brand: string }) {
+  return (
+    <AnimatePresence>
+      {show && (
+        <motion.div
+          key="processing"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.15 }}
+          className="absolute inset-0 z-20 flex items-center justify-center bg-white/80 backdrop-blur-sm"
+        >
+          <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-white px-7 py-6 shadow-[0_18px_44px_-14px_rgba(15,15,25,0.34)]">
+            <Loader2 className="size-7 animate-spin" style={{ color: brand }} />
+            <div className="text-[14px] font-bold text-neutral-900">Processing payment…</div>
+            <div className="text-[12.5px] text-neutral-500">Please don&apos;t close this window</div>
+          </div>
+        </motion.div>
+      )}
+    </AnimatePresence>
+  );
+}
+
 /** Read-only variant picker — the live page shows a select even with one option. */
 function VariantSelect({ label }: { label: string }) {
   return (
@@ -118,17 +142,24 @@ function OfferCard({
   brand,
   currency,
   layout,
+  onAdd,
 }: {
   product: DemoProduct;
   brand: string;
   currency: string;
   layout: "tile" | "wide";
+  onAdd: (p: DemoProduct, deal: number) => void;
 }) {
   const [added, setAdded] = useState(false);
   const variantLabel = product.variants?.[0]?.title || product.variant || product.title;
   // post-purchase offers run at half price, same convention as ThankYouProducts
   const deal = Math.max(1, Math.round(product.price * 0.5));
   const fmt = (n: number) => money0(n, currency);
+  const add = () => {
+    if (added) return;
+    setAdded(true);
+    onAdd(product, deal);
+  };
 
   const priceRow = (
     <div className="flex items-baseline gap-2">
@@ -139,7 +170,7 @@ function OfferCard({
 
   const addBtn = (
     <button
-      onClick={() => setAdded(true)}
+      onClick={add}
       className="w-full rounded-lg py-2.5 text-[13px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99]"
       style={{ background: added ? "#15803d" : brand }}
     >
@@ -219,7 +250,10 @@ export function CodToPrepaidMock({
   const prepaidSaving = round2(codTotal - prepaidTotal);
 
   const [paid, setPaid] = useState(false);
-  const [processing, setProcessing] = useState(false);
+  const [balancePaid, setBalancePaid] = useState(false);
+  const [extras, setExtras] = useState<{ id: string; title: string; deal: number }[]>([]);
+  // which payment is in flight, so the popup sits over the card that started it
+  const [processing, setProcessing] = useState<null | "prepaid" | "balance">(null);
   const [left, setLeft] = useState(OFFER_SECONDS);
 
   // Counts down from mount, so SSR and first client render agree (no Date.now).
@@ -229,13 +263,18 @@ export function CodToPrepaidMock({
     return () => clearInterval(id);
   }, [paid]);
 
-  // Hold the processing popup, then settle.
+  // Hold the processing popup, then settle whichever payment started it.
   useEffect(() => {
     if (!processing) return;
+    const kind = processing;
     const t = setTimeout(() => {
-      setProcessing(false);
-      setPaid(true);
-      onPaid?.();
+      setProcessing(null);
+      if (kind === "prepaid") {
+        setPaid(true);
+        onPaid?.();
+      } else {
+        setBalancePaid(true);
+      }
     }, PROCESSING_MS);
     return () => clearTimeout(t);
     // onPaid identity must not restart the timer mid-payment.
@@ -244,8 +283,23 @@ export function CodToPrepaidMock({
 
   const pay = () => {
     if (paid || processing) return;
-    setProcessing(true);
+    setProcessing("prepaid");
   };
+
+  // Adding an offer after checkout charges the difference, so it lands as a balance
+  // rather than silently changing the total.
+  const addExtra = (p: DemoProduct, deal: number) => {
+    setBalancePaid(false);
+    setExtras((xs) => (xs.some((x) => x.id === p.id) ? xs : [...xs, { id: p.id, title: p.title, deal }]));
+  };
+  const payBalance = () => {
+    if (processing) return;
+    setProcessing("balance");
+  };
+
+  const extrasTotal = extras.reduce((s, x) => s + x.deal, 0);
+  const balanceDue = balancePaid ? 0 : extrasTotal;
+  const orderTotal = round2((paid ? prepaidTotal : codTotal) + extrasTotal);
 
   return (
     <div className="flex flex-col gap-4 bg-neutral-50 p-4 lg:p-5">
@@ -267,25 +321,7 @@ export function CodToPrepaidMock({
         ref={tourRefs?.offerCard}
         className="relative overflow-hidden rounded-2xl border border-border bg-white p-4 shadow-soft-sm lg:p-5"
       >
-        {/* processing popup — sits over the card while the payment goes through */}
-        <AnimatePresence>
-          {processing && (
-            <motion.div
-              key="processing"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="absolute inset-0 z-20 flex items-center justify-center bg-white/80 backdrop-blur-sm"
-            >
-              <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-white px-7 py-6 shadow-[0_18px_44px_-14px_rgba(15,15,25,0.34)]">
-                <Loader2 className="size-7 animate-spin" style={{ color: brand }} />
-                <div className="text-[14px] font-bold text-neutral-900">Processing payment…</div>
-                <div className="text-[12.5px] text-neutral-500">Please don&apos;t close this window</div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
+        <ProcessingOverlay show={processing === "prepaid"} brand={brand} />
         <AnimatePresence mode="wait" initial={false}>
           {!paid ? (
             <motion.div
@@ -331,7 +367,7 @@ export function CodToPrepaidMock({
               <button
                 ref={tourRefs?.payBtn}
                 onClick={pay}
-                disabled={processing}
+                disabled={!!processing}
                 className="mt-4 w-full rounded-xl py-3.5 text-[14px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99] disabled:opacity-70"
                 style={{ background: brand }}
               >
@@ -381,12 +417,14 @@ export function CodToPrepaidMock({
       {/* ---------- payment state ---------- */}
       <div className="rounded-xl border border-border bg-white p-4">
         <div className="text-[15px] font-bold text-neutral-900">
-          {fmt(paid ? prepaidTotal : codTotal)} {currency}
+          {fmt(orderTotal)} {currency}
         </div>
         <p className="mt-1 text-[13px] leading-relaxed text-neutral-500">
-          {paid
-            ? "Payment received. This order is fully paid and moves straight to fulfillment."
-            : "This order has a pending payment. The balance will be updated when payment is received."}
+          {balanceDue > 0
+            ? `${fmt(balanceDue)} is outstanding for the items you just added.`
+            : paid
+              ? "Payment received. This order is fully paid and moves straight to fulfillment."
+              : "This order has a pending payment. The balance will be updated when payment is received."}
         </p>
       </div>
 
@@ -396,7 +434,7 @@ export function CodToPrepaidMock({
           <h3 className="text-[16px] font-bold text-neutral-900">Too good to miss !</h3>
           <div className="mt-3.5 flex gap-3 overflow-x-auto pb-2">
             {tiles.map((p) => (
-              <OfferCard key={p.id} product={p} brand={brand} currency={currency} layout="tile" />
+              <OfferCard key={p.id} product={p} brand={brand} currency={currency} layout="tile" onAdd={addExtra} />
             ))}
           </div>
         </div>
@@ -417,8 +455,21 @@ export function CodToPrepaidMock({
           <div className="text-[14px] font-semibold text-neutral-900">{fmt(subtotal)}</div>
         </div>
 
+        {/* items added after checkout, each at its offer price */}
+        {extras.map((x) => (
+          <div key={x.id} className="mt-3 flex items-start justify-between gap-3 border-t border-border pt-3">
+            <div className="min-w-0">
+              <div className="text-[13.5px] font-semibold text-neutral-900">{x.title}</div>
+              <span className="mt-1 inline-block rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-neutral-500">
+                ADDED AFTER CHECKOUT
+              </span>
+            </div>
+            <div className="text-[13.5px] font-semibold text-neutral-900">{fmt(x.deal)}</div>
+          </div>
+        ))}
+
         <div className="mt-4 border-t border-border pt-3">
-          <Row label="Subtotal" value={fmt(subtotal)} />
+          <Row label="Subtotal" value={fmt(subtotal + extrasTotal)} />
           <Row label="Order discount" sub={CODE_NAME} value={`-${fmt(codeDiscount)}`} />
           <Row label="Shipping" value="Free" />
           {paid && (
@@ -431,7 +482,7 @@ export function CodToPrepaidMock({
               value={
                 <span>
                   <span className="mr-1.5 text-[12px] font-medium text-neutral-400">{currency}</span>
-                  {fmt(paid ? prepaidTotal : codTotal)}
+                  {fmt(orderTotal)}
                 </span>
               }
             />
@@ -443,6 +494,36 @@ export function CodToPrepaidMock({
           <Banknote className="size-4 text-neutral-400" />
           TOTAL SAVINGS {fmt(paid ? codeDiscount + prepaidSaving : codeDiscount)}
         </div>
+
+        {/* ---------- balance to settle for the items just added ---------- */}
+        {balanceDue > 0 && (
+          <div className="relative mt-4 overflow-hidden rounded-xl bg-amber-50 p-4">
+            <ProcessingOverlay show={processing === "balance"} brand={brand} />
+            <div className="flex items-baseline justify-between">
+              <span className="text-[13.5px] font-semibold text-neutral-700">Balance due</span>
+              <span className="text-[15px] font-bold text-neutral-900">{fmt(balanceDue)}</span>
+            </div>
+            <p className="mt-1 text-[12px] leading-snug text-neutral-500">
+              You added to your order. Pay the difference to confirm the changes.
+            </p>
+            <button
+              onClick={payBalance}
+              disabled={!!processing}
+              className="mt-3 w-full rounded-lg py-2.5 text-[13px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99] disabled:opacity-70"
+              style={{ background: brand }}
+            >
+              Pay {fmt(balanceDue)}
+            </button>
+          </div>
+        )}
+
+        {/* the added items are settled */}
+        {balancePaid && extras.length > 0 && (
+          <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-[13px] font-bold text-emerald-800">
+            <CircleCheck className="size-4 shrink-0" />
+            Balance paid. {fmt(extrasTotal)} charged for the added {extras.length === 1 ? "item" : "items"}.
+          </div>
+        )}
       </div>
 
       {/* ---------- "You may also like this product" ---------- */}
@@ -450,7 +531,7 @@ export function CodToPrepaidMock({
         <div className="rounded-xl border border-border bg-white p-4 lg:p-5">
           <h3 className="text-[16px] font-bold text-neutral-900">You may also like this product</h3>
           <div className="mt-3.5">
-            <OfferCard product={alsoLike} brand={brand} currency={currency} layout="wide" />
+            <OfferCard product={alsoLike} brand={brand} currency={currency} layout="wide" onAdd={addExtra} />
           </div>
         </div>
       )}
@@ -461,7 +542,7 @@ export function CodToPrepaidMock({
         email={DEFAULT_EMAIL}
         phone={DEFAULT_PHONE}
         country={DEFAULT_COUNTRY}
-        amount={`${fmt(paid ? prepaidTotal : codTotal)} ${currency}`}
+        amount={`${fmt(orderTotal)} ${currency}`}
         paymentIcon={paid ? Smartphone : Banknote}
         paymentLabel={
           paid
