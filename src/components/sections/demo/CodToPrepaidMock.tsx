@@ -2,9 +2,19 @@
 
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Banknote, Check, CircleCheck, Lock, Smartphone, TriangleAlert } from "lucide-react";
-import type { DemoStore } from "@/lib/site";
-import { readableBrand } from "@/lib/utils";
+import {
+  Banknote,
+  Check,
+  ChevronDown,
+  CircleCheck,
+  Lock,
+  Minus,
+  Plus,
+  Smartphone,
+  TriangleAlert,
+} from "lucide-react";
+import type { DemoProduct, DemoStore } from "@/lib/site";
+import { dedupeExactTitle, readableBrand } from "@/lib/utils";
 import {
   DEFAULT_ADDR,
   DEFAULT_COUNTRY,
@@ -76,6 +86,114 @@ function Row({
   );
 }
 
+/** Read-only variant picker — the live page shows a select even with one option. */
+function VariantSelect({ label }: { label: string }) {
+  return (
+    <div className="relative">
+      <div className="rounded-lg border border-border px-3 py-2 pr-8">
+        <div className="text-[10.5px] leading-none text-neutral-400">Variant</div>
+        <div className="mt-1 truncate text-[12.5px] font-medium text-neutral-800">{label}</div>
+      </div>
+      <ChevronDown className="pointer-events-none absolute right-2.5 top-1/2 size-4 -translate-y-1/2 text-neutral-400" />
+    </div>
+  );
+}
+
+function Stepper({ qty, setQty }: { qty: number; setQty: (n: number) => void }) {
+  return (
+    <div className="flex items-center justify-between rounded-lg border border-border px-1.5 py-1">
+      <button
+        onClick={() => setQty(Math.max(1, qty - 1))}
+        aria-label="Decrease quantity"
+        className="flex size-7 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100"
+      >
+        <Minus className="size-3.5" />
+      </button>
+      <span className="text-[13px] font-semibold text-neutral-900">{qty}</span>
+      <button
+        onClick={() => setQty(qty + 1)}
+        aria-label="Increase quantity"
+        className="flex size-7 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100"
+      >
+        <Plus className="size-3.5" />
+      </button>
+    </div>
+  );
+}
+
+/**
+ * An offer card. `layout="tile"` is the horizontal "Too good to miss !" scroller;
+ * `layout="wide"` is the single "You may also like this product" block.
+ */
+function OfferCard({
+  product,
+  brand,
+  fmt,
+  layout,
+  addBtnRef,
+}: {
+  product: DemoProduct;
+  brand: string;
+  fmt: (n: number) => string;
+  layout: "tile" | "wide";
+  addBtnRef?: React.RefObject<HTMLButtonElement | null>;
+}) {
+  const [qty, setQty] = useState(1);
+  const [added, setAdded] = useState(false);
+  const variantLabel = product.variants?.[0]?.title || product.variant || product.title;
+
+  const controls = (
+    <>
+      <VariantSelect label={variantLabel} />
+      <Stepper qty={qty} setQty={setQty} />
+      <button
+        ref={addBtnRef}
+        onClick={() => setAdded(true)}
+        className="w-full rounded-lg py-2.5 text-[13px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99]"
+        style={{ background: added ? "#15803d" : brand }}
+      >
+        {added ? (
+          <span className="inline-flex items-center gap-1.5">
+            <Check className="size-3.5" strokeWidth={3} /> Added
+          </span>
+        ) : (
+          "Buy now"
+        )}
+      </button>
+    </>
+  );
+
+  if (layout === "wide") {
+    return (
+      <div className="rounded-xl border border-border p-4">
+        <div className="flex gap-4">
+          <div className="size-[104px] shrink-0 overflow-hidden rounded-lg border border-border">
+            <DemoImg src={product.image} alt={product.title} className="size-full object-cover" />
+          </div>
+          <div className="flex min-w-0 flex-1 flex-col gap-2">
+            <div className="text-[14px] font-bold leading-snug text-neutral-900">{product.title}</div>
+            <div className="text-[14px] font-semibold text-neutral-900">{fmt(product.price)}</div>
+            {controls}
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex w-[190px] shrink-0 flex-col gap-2.5 rounded-xl border border-border p-3">
+      <div className="aspect-square w-full overflow-hidden rounded-lg border border-border">
+        <DemoImg src={product.image} alt={product.title} className="size-full object-cover" />
+      </div>
+      <div className="line-clamp-2 min-h-[2.5em] text-[13px] font-semibold leading-snug text-neutral-900">
+        {product.title}
+      </div>
+      <div className="text-[14px] font-bold text-neutral-900">{fmt(product.price)}</div>
+      {controls}
+    </div>
+  );
+}
+
 export function CodToPrepaidMock({
   store,
   tourRefs,
@@ -92,8 +210,17 @@ export function CodToPrepaidMock({
   const currency = store.currency || "INR";
   const fmt = (n: number) => money(n, currency);
 
-  const product = store.products.find((p) => (p.price ?? 0) > 0) ?? store.products[0];
+  const priced = store.products.filter((p) => (p.price ?? 0) > 0);
+  const product = priced[0] ?? store.products[0];
   const subtotal = product?.price ?? 1499;
+
+  // Offers exclude whatever is already in the order; colour/size variants are kept
+  // so the scroller has enough cards, exactly like the live page.
+  const offers = dedupeExactTitle(priced.length ? priced : store.products).filter(
+    (p) => p.id !== product?.id
+  );
+  const tiles = offers.slice(0, 4);
+  const alsoLike = offers[0];
   const codeDiscount = round2(subtotal * CODE_OFF);
   const codTotal = round2(subtotal - codeDiscount);
   const prepaidTotal = round2(codTotal * (1 - PREPAID_OFF));
@@ -228,6 +355,18 @@ export function CodToPrepaidMock({
         </p>
       </div>
 
+      {/* ---------- "Too good to miss !" offer scroller ---------- */}
+      {tiles.length > 0 && (
+        <div className="rounded-xl border border-border bg-white p-4 lg:p-5">
+          <h3 className="text-[16px] font-bold text-neutral-900">Too good to miss !</h3>
+          <div className="mt-3.5 flex gap-3 overflow-x-auto pb-2">
+            {tiles.map((p) => (
+              <OfferCard key={p.id} product={p} brand={brand} fmt={fmt} layout="tile" />
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ---------- order summary ---------- */}
       <div className="rounded-xl border border-border bg-white p-4 lg:p-5">
         <div className="flex items-center gap-3">
@@ -270,6 +409,16 @@ export function CodToPrepaidMock({
           TOTAL SAVINGS {fmt(paid ? codeDiscount + prepaidSaving : codeDiscount)}
         </div>
       </div>
+
+      {/* ---------- "You may also like this product" ---------- */}
+      {alsoLike && (
+        <div className="rounded-xl border border-border bg-white p-4 lg:p-5">
+          <h3 className="text-[16px] font-bold text-neutral-900">You may also like this product</h3>
+          <div className="mt-3.5">
+            <OfferCard product={alsoLike} brand={brand} fmt={fmt} layout="wide" />
+          </div>
+        </div>
+      )}
 
       {/* ---------- contact / addresses / payment method ---------- */}
       <OrderDetails
