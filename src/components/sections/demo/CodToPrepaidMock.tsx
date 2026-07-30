@@ -151,33 +151,35 @@ function VariantSelect({ label }: { label: string }) {
  * An offer card. `layout="tile"` is the horizontal "Too good to miss !" scroller;
  * `layout="wide"` is the single "You may also like this product" block.
  *
- * The action is a single "Add · ₹x" button rather than a quantity stepper — one tap
- * puts it on the order, matching the cross-sell row in the order-editing window.
+ * "Add · ₹x" puts it on the order, then that slot becomes a −qty+ stepper, the same
+ * two-stage control the order-status upsell uses.
  */
 function OfferCard({
   product,
   brand,
   currency,
   layout,
-  added,
+  qty,
   disabled,
   onAdd,
+  onQty,
 }: {
   product: DemoProduct;
   brand: string;
   currency: string;
   layout: "tile" | "wide";
-  /** Reflects the order, not the click — it flips once the add has settled. */
-  added: boolean;
+  /** Quantity on the order (0 = not added). Reflects the order, not the click. */
+  qty: number;
   disabled?: boolean;
   onAdd: (p: DemoProduct, deal: number) => void;
+  onQty: (id: string, next: number) => void;
 }) {
   const variantLabel = product.variants?.[0]?.title || product.variant || product.title;
   // post-purchase offers run at half price, same convention as ThankYouProducts
   const deal = Math.max(1, Math.round(product.price * 0.5));
   const fmt = (n: number) => money0(n, currency);
   const add = () => {
-    if (added || disabled) return;
+    if (qty > 0 || disabled) return;
     onAdd(product, deal);
   };
 
@@ -188,21 +190,41 @@ function OfferCard({
     </div>
   );
 
-  const addBtn = (
-    <button
-      onClick={add}
-      className="w-full rounded-lg py-2.5 text-[13px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99]"
-      style={{ background: added ? "#15803d" : brand }}
-    >
-      {added ? (
-        <span className="inline-flex items-center gap-1.5">
-          <Check className="size-3.5" strokeWidth={3} /> Added
-        </span>
-      ) : (
-        `Add · ${fmt(deal)}`
-      )}
-    </button>
-  );
+  // Add first, then the same slot becomes a −qty+ stepper (as in ThankYouUpsell).
+  const addBtn =
+    qty === 0 ? (
+      <button
+        onClick={add}
+        disabled={disabled}
+        className="w-full rounded-lg py-2.5 text-[13px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99] disabled:opacity-70"
+        style={{ background: brand }}
+      >
+        {`Add · ${fmt(deal)}`}
+      </button>
+    ) : (
+      <div
+        className="flex items-center justify-between rounded-lg"
+        style={{ border: `1.5px solid ${brand}` }}
+      >
+        <button
+          onClick={() => onQty(product.id, qty - 1)}
+          aria-label={`Decrease ${product.title}`}
+          className="flex size-9 items-center justify-center text-[18px] font-bold leading-none"
+          style={{ color: brand }}
+        >
+          −
+        </button>
+        <span className="text-[13px] font-bold text-neutral-900">{qty}</span>
+        <button
+          onClick={() => onQty(product.id, qty + 1)}
+          aria-label={`Increase ${product.title}`}
+          className="flex size-9 items-center justify-center text-[18px] font-bold leading-none"
+          style={{ color: brand }}
+        >
+          +
+        </button>
+      </div>
+    );
 
   if (layout === "wide") {
     return (
@@ -271,7 +293,7 @@ export function CodToPrepaidMock({
 
   const [paid, setPaid] = useState(false);
   const [balancePaid, setBalancePaid] = useState(false);
-  const [extras, setExtras] = useState<{ id: string; title: string; deal: number }[]>([]);
+  const [extras, setExtras] = useState<{ id: string; title: string; deal: number; qty: number }[]>([]);
   // what is in flight: an add, or one of the two payments
   const [busy, setBusy] = useState<null | { kind: "adding"; product: DemoProduct; deal: number } | { kind: "prepaid" } | { kind: "balance" }>(null);
   // after an add settles, prompt to settle the balance
@@ -296,7 +318,7 @@ export function CodToPrepaidMock({
         setExtras((xs) =>
           xs.some((x) => x.id === job.product.id)
             ? xs
-            : [...xs, { id: job.product.id, title: job.product.title, deal: job.deal }]
+            : [...xs, { id: job.product.id, title: job.product.title, deal: job.deal, qty: 1 }]
         );
         setPrompt(true); // now ask them to settle it
       } else if (job.kind === "prepaid") {
@@ -322,13 +344,22 @@ export function CodToPrepaidMock({
     if (busy) return;
     setBusy({ kind: "adding", product: p, deal });
   };
+  // Quantity changes after the first add are instant — no loading box, no popup.
+  // Dropping to zero removes the line; either way the balance reopens.
+  const setExtraQty = (id: string, next: number) => {
+    setBalancePaid(false);
+    setExtras((xs) =>
+      next <= 0 ? xs.filter((x) => x.id !== id) : xs.map((x) => (x.id === id ? { ...x, qty: next } : x))
+    );
+  };
+
   const payBalance = () => {
     if (busy) return;
     setPrompt(false);
     setBusy({ kind: "balance" });
   };
 
-  const extrasTotal = extras.reduce((s, x) => s + x.deal, 0);
+  const extrasTotal = extras.reduce((s, x) => s + x.deal * x.qty, 0);
   const balanceDue = balancePaid ? 0 : extrasTotal;
   const orderTotal = round2((paid ? prepaidTotal : codTotal) + extrasTotal);
 
@@ -464,7 +495,7 @@ export function CodToPrepaidMock({
           <h3 className="text-[16px] font-bold text-neutral-900">Too good to miss !</h3>
           <div className="mt-3.5 flex gap-3 overflow-x-auto pb-2">
             {tiles.map((p) => (
-              <OfferCard key={p.id} product={p} brand={brand} currency={currency} layout="tile" added={extras.some((x) => x.id === p.id)} disabled={!!busy} onAdd={addExtra} />
+              <OfferCard key={p.id} product={p} brand={brand} currency={currency} layout="tile" qty={extras.find((x) => x.id === p.id)?.qty ?? 0} disabled={!!busy} onAdd={addExtra} onQty={setExtraQty} />
             ))}
           </div>
         </div>
@@ -489,12 +520,15 @@ export function CodToPrepaidMock({
         {extras.map((x) => (
           <div key={x.id} className="mt-3 flex items-start justify-between gap-3 border-t border-border pt-3">
             <div className="min-w-0">
-              <div className="text-[13.5px] font-semibold text-neutral-900">{x.title}</div>
+              <div className="text-[13.5px] font-semibold text-neutral-900">
+                {x.title}
+                {x.qty > 1 && <span className="text-neutral-400"> × {x.qty}</span>}
+              </div>
               <span className="mt-1 inline-block rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-neutral-500">
                 ADDED AFTER CHECKOUT
               </span>
             </div>
-            <div className="text-[13.5px] font-semibold text-neutral-900">{fmt(x.deal)}</div>
+            <div className="text-[13.5px] font-semibold text-neutral-900">{fmt(x.deal * x.qty)}</div>
           </div>
         ))}
 
@@ -560,7 +594,7 @@ export function CodToPrepaidMock({
         <div className="rounded-xl border border-border bg-white p-4 lg:p-5">
           <h3 className="text-[16px] font-bold text-neutral-900">You may also like this product</h3>
           <div className="mt-3.5">
-            <OfferCard product={alsoLike} brand={brand} currency={currency} layout="wide" added={extras.some((x) => x.id === alsoLike.id)} disabled={!!busy} onAdd={addExtra} />
+            <OfferCard product={alsoLike} brand={brand} currency={currency} layout="wide" qty={extras.find((x) => x.id === alsoLike.id)?.qty ?? 0} disabled={!!busy} onAdd={addExtra} onQty={setExtraQty} />
           </div>
         </div>
       )}
