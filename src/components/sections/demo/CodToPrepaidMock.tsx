@@ -7,9 +7,8 @@ import {
   Check,
   ChevronDown,
   CircleCheck,
+  Loader2,
   Lock,
-  Minus,
-  Plus,
   Smartphone,
   TriangleAlert,
 } from "lucide-react";
@@ -46,12 +45,18 @@ const money = (n: number, currency = "INR") =>
     maximumFractionDigits: 2,
   }).format(n);
 
+/** Whole rupees — offer prices are round, so paise would just be noise. */
+const money0 = (n: number, currency = "INR") =>
+  new Intl.NumberFormat("en-IN", { style: "currency", currency, maximumFractionDigits: 0 }).format(n);
+
 const round2 = (n: number) => Math.round(n * 100) / 100;
 
 const PREPAID_OFF = 0.05; // extra discount for switching off COD
 const CODE_OFF = 0.05; // the SAVE5 code already applied at checkout
 const CODE_NAME = "SAVE5";
 const OFFER_SECONDS = 50 * 60 + 39; // the remaining slice of the prepaid window
+const PROCESSING_MS = 1500; // how long the "processing payment" popup holds
+const CONFIRMATION = "JDTNH5Z6N"; // same order as the editing window, so they agree
 
 /** "50 mins and 39 secs" */
 function humanize(total: number) {
@@ -99,68 +104,51 @@ function VariantSelect({ label }: { label: string }) {
   );
 }
 
-function Stepper({ qty, setQty }: { qty: number; setQty: (n: number) => void }) {
-  return (
-    <div className="flex items-center justify-between rounded-lg border border-border px-1.5 py-1">
-      <button
-        onClick={() => setQty(Math.max(1, qty - 1))}
-        aria-label="Decrease quantity"
-        className="flex size-7 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100"
-      >
-        <Minus className="size-3.5" />
-      </button>
-      <span className="text-[13px] font-semibold text-neutral-900">{qty}</span>
-      <button
-        onClick={() => setQty(qty + 1)}
-        aria-label="Increase quantity"
-        className="flex size-7 items-center justify-center rounded-md text-neutral-500 transition-colors hover:bg-neutral-100"
-      >
-        <Plus className="size-3.5" />
-      </button>
-    </div>
-  );
-}
-
 /**
  * An offer card. `layout="tile"` is the horizontal "Too good to miss !" scroller;
  * `layout="wide"` is the single "You may also like this product" block.
+ *
+ * The action is a single "Add · ₹x" button rather than a quantity stepper — one tap
+ * puts it on the order, matching the cross-sell row in the order-editing window.
  */
 function OfferCard({
   product,
   brand,
-  fmt,
+  currency,
   layout,
-  addBtnRef,
 }: {
   product: DemoProduct;
   brand: string;
-  fmt: (n: number) => string;
+  currency: string;
   layout: "tile" | "wide";
-  addBtnRef?: React.RefObject<HTMLButtonElement | null>;
 }) {
-  const [qty, setQty] = useState(1);
   const [added, setAdded] = useState(false);
   const variantLabel = product.variants?.[0]?.title || product.variant || product.title;
+  // post-purchase offers run at half price, same convention as ThankYouProducts
+  const deal = Math.max(1, Math.round(product.price * 0.5));
+  const fmt = (n: number) => money0(n, currency);
 
-  const controls = (
-    <>
-      <VariantSelect label={variantLabel} />
-      <Stepper qty={qty} setQty={setQty} />
-      <button
-        ref={addBtnRef}
-        onClick={() => setAdded(true)}
-        className="w-full rounded-lg py-2.5 text-[13px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99]"
-        style={{ background: added ? "#15803d" : brand }}
-      >
-        {added ? (
-          <span className="inline-flex items-center gap-1.5">
-            <Check className="size-3.5" strokeWidth={3} /> Added
-          </span>
-        ) : (
-          "Buy now"
-        )}
-      </button>
-    </>
+  const priceRow = (
+    <div className="flex items-baseline gap-2">
+      <span className="text-[13px] text-neutral-400 line-through">{fmt(product.price)}</span>
+      <span className="text-[14px] font-bold text-emerald-700">{fmt(deal)}</span>
+    </div>
+  );
+
+  const addBtn = (
+    <button
+      onClick={() => setAdded(true)}
+      className="w-full rounded-lg py-2.5 text-[13px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99]"
+      style={{ background: added ? "#15803d" : brand }}
+    >
+      {added ? (
+        <span className="inline-flex items-center gap-1.5">
+          <Check className="size-3.5" strokeWidth={3} /> Added
+        </span>
+      ) : (
+        `Add · ${fmt(deal)}`
+      )}
+    </button>
   );
 
   if (layout === "wide") {
@@ -172,8 +160,9 @@ function OfferCard({
           </div>
           <div className="flex min-w-0 flex-1 flex-col gap-2">
             <div className="text-[14px] font-bold leading-snug text-neutral-900">{product.title}</div>
-            <div className="text-[14px] font-semibold text-neutral-900">{fmt(product.price)}</div>
-            {controls}
+            {priceRow}
+            <VariantSelect label={variantLabel} />
+            {addBtn}
           </div>
         </div>
       </div>
@@ -188,8 +177,9 @@ function OfferCard({
       <div className="line-clamp-2 min-h-[2.5em] text-[13px] font-semibold leading-snug text-neutral-900">
         {product.title}
       </div>
-      <div className="text-[14px] font-bold text-neutral-900">{fmt(product.price)}</div>
-      {controls}
+      {priceRow}
+      <VariantSelect label={variantLabel} />
+      {addBtn}
     </div>
   );
 }
@@ -227,6 +217,7 @@ export function CodToPrepaidMock({
   const prepaidSaving = round2(codTotal - prepaidTotal);
 
   const [paid, setPaid] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const [left, setLeft] = useState(OFFER_SECONDS);
 
   // Countdown starts on mount (no Date.now, so SSR and the first client render agree).
@@ -236,19 +227,65 @@ export function CodToPrepaidMock({
     return () => clearInterval(id);
   }, [paid]);
 
+  // Pay → a short "processing" popup over the card (a real gateway hop takes a beat),
+  // then the order flips to prepaid. onPaid fires only once it has actually settled.
+  useEffect(() => {
+    if (!processing) return;
+    const t = setTimeout(() => {
+      setProcessing(false);
+      setPaid(true);
+      onPaid?.();
+    }, PROCESSING_MS);
+    return () => clearTimeout(t);
+    // onPaid is a stable callback from the parent; re-running on identity change would
+    // restart the timer mid-payment.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [processing]);
+
   const pay = () => {
-    if (paid) return;
-    setPaid(true);
-    onPaid?.();
+    if (paid || processing) return;
+    setProcessing(true);
   };
 
   return (
     <div className="flex flex-col gap-4 bg-neutral-50 p-4 lg:p-5">
+      {/* ---------- order confirmed: the thank-you line leads the page ---------- */}
+      <div className="flex items-center gap-3 rounded-xl border border-border bg-white p-4">
+        <span className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-emerald-600">
+          <Check className="size-4 text-emerald-700" strokeWidth={3} />
+        </span>
+        <div className="min-w-0">
+          <div className="text-[12px] text-neutral-500">Confirmation #{CONFIRMATION}</div>
+          <div className="text-[17px] font-bold leading-tight text-neutral-900">
+            Thank you, {DEFAULT_ADDR.first}!
+          </div>
+        </div>
+      </div>
+
       {/* ---------- the prepaid nudge (or its paid confirmation) ---------- */}
       <div
         ref={tourRefs?.offerCard}
-        className="overflow-hidden rounded-2xl border border-border bg-white p-4 shadow-soft-sm lg:p-5"
+        className="relative overflow-hidden rounded-2xl border border-border bg-white p-4 shadow-soft-sm lg:p-5"
       >
+        {/* processing popup — sits over the card while the payment goes through */}
+        <AnimatePresence>
+          {processing && (
+            <motion.div
+              key="processing"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="absolute inset-0 z-20 flex items-center justify-center bg-white/80 backdrop-blur-sm"
+            >
+              <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-white px-7 py-6 shadow-[0_18px_44px_-14px_rgba(15,15,25,0.34)]">
+                <Loader2 className="size-7 animate-spin" style={{ color: brand }} />
+                <div className="text-[14px] font-bold text-neutral-900">Processing payment…</div>
+                <div className="text-[12.5px] text-neutral-500">Please don&apos;t close this window</div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
         <AnimatePresence mode="wait" initial={false}>
           {!paid ? (
             <motion.div
@@ -294,7 +331,8 @@ export function CodToPrepaidMock({
               <button
                 ref={tourRefs?.payBtn}
                 onClick={pay}
-                className="mt-4 w-full rounded-xl py-3.5 text-[14px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99]"
+                disabled={processing}
+                className="mt-4 w-full rounded-xl py-3.5 text-[14px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99] disabled:opacity-70"
                 style={{ background: brand }}
               >
                 Pay Now &amp; Get {Math.round(PREPAID_OFF * 100)}% Off
@@ -361,7 +399,7 @@ export function CodToPrepaidMock({
           <h3 className="text-[16px] font-bold text-neutral-900">Too good to miss !</h3>
           <div className="mt-3.5 flex gap-3 overflow-x-auto pb-2">
             {tiles.map((p) => (
-              <OfferCard key={p.id} product={p} brand={brand} fmt={fmt} layout="tile" />
+              <OfferCard key={p.id} product={p} brand={brand} currency={currency} layout="tile" />
             ))}
           </div>
         </div>
@@ -415,7 +453,7 @@ export function CodToPrepaidMock({
         <div className="rounded-xl border border-border bg-white p-4 lg:p-5">
           <h3 className="text-[16px] font-bold text-neutral-900">You may also like this product</h3>
           <div className="mt-3.5">
-            <OfferCard product={alsoLike} brand={brand} fmt={fmt} layout="wide" />
+            <OfferCard product={alsoLike} brand={brand} currency={currency} layout="wide" />
           </div>
         </div>
       )}

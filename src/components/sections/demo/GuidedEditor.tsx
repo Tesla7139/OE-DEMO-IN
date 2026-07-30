@@ -181,8 +181,8 @@ const COD_PREPAID_TOUR_STEPS: TourStepDef[] = [
     dotId: "cod-pay", // one red dot — straight on the Pay Now button
     autoClickId: "cod-pay",
     scrollAlignTop: true, // the offer card is tall; pin it to the top of the window
-    seamless: true, // keep the highlight while it flips to the paid state
-    advanceDelayMs: 1500,
+    seamless: true, // hold the highlight through the "processing payment" popup
+    advanceDelayMs: 1900, // just past the 1500ms popup, so the flip is visible
   },
   {
     // the card has flipped to "now prepaid" — let it land, no new box
