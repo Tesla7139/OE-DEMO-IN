@@ -17,8 +17,10 @@ import { dedupeExactTitle, readableBrand } from "@/lib/utils";
 import {
   DEFAULT_ADDR,
   DEFAULT_COUNTRY,
+  DEFAULT_COURIER,
   DEFAULT_EMAIL,
   DEFAULT_PHONE,
+  DEFAULT_UPI,
 } from "@/lib/demo-customer";
 import { DemoImg } from "./DemoImg";
 import { OrderDetails } from "./OrderDetails";
@@ -220,15 +222,14 @@ export function CodToPrepaidMock({
   const [processing, setProcessing] = useState(false);
   const [left, setLeft] = useState(OFFER_SECONDS);
 
-  // Countdown starts on mount (no Date.now, so SSR and the first client render agree).
+  // Counts down from mount, so SSR and first client render agree (no Date.now).
   useEffect(() => {
     if (paid) return;
     const id = setInterval(() => setLeft((s) => (s > 0 ? s - 1 : 0)), 1000);
     return () => clearInterval(id);
   }, [paid]);
 
-  // Pay → a short "processing" popup over the card (a real gateway hop takes a beat),
-  // then the order flips to prepaid. onPaid fires only once it has actually settled.
+  // Hold the processing popup, then settle.
   useEffect(() => {
     if (!processing) return;
     const t = setTimeout(() => {
@@ -237,8 +238,7 @@ export function CodToPrepaidMock({
       onPaid?.();
     }, PROCESSING_MS);
     return () => clearTimeout(t);
-    // onPaid is a stable callback from the parent; re-running on identity change would
-    // restart the timer mid-payment.
+    // onPaid identity must not restart the timer mid-payment.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [processing]);
 
@@ -354,12 +354,9 @@ export function CodToPrepaidMock({
               <div className="mx-auto flex size-11 items-center justify-center rounded-full bg-emerald-100">
                 <Check className="size-6 text-emerald-700" strokeWidth={3} />
               </div>
-              <h3 className="mt-3 text-[16px] font-bold text-neutral-900">
-                Paid — this order is now prepaid
-              </h3>
-              <p className="mx-auto mt-1.5 max-w-sm text-[13.5px] leading-relaxed text-neutral-500">
-                {fmt(prepaidTotal)} collected up front. No cash to hand over on delivery, and no
-                COD order left to bounce back.
+              <h3 className="mt-3 text-[16px] font-bold text-neutral-900">Payment successful</h3>
+              <p className="mt-1.5 text-[13.5px] text-neutral-500">
+                {fmt(prepaidTotal)} paid. Now prepaid.
               </p>
               <div className="mt-3.5 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3.5 py-1.5 text-[13px] font-bold text-emerald-800">
                 <CircleCheck className="size-3.5" />
@@ -438,7 +435,7 @@ export function CodToPrepaidMock({
                 </span>
               }
             />
-            <div className="text-[12px] text-neutral-400">Including {fmt(0)} in taxes</div>
+            <div className="text-[12px] text-neutral-400">Including {fmt(0)} GST</div>
           </div>
         </div>
 
@@ -468,10 +465,10 @@ export function CodToPrepaidMock({
         paymentIcon={paid ? Smartphone : Banknote}
         paymentLabel={
           paid
-            ? `Prepaid · UPI · ${fmt(prepaidTotal)} ${currency}`
+            ? `UPI · ${DEFAULT_UPI} · ${fmt(prepaidTotal)} ${currency}`
             : `Cash on Delivery (COD) · ${fmt(codTotal)} ${currency}`
         }
-        shippingMethod={paid ? "Standard (Prepaid)" : "Standard (COD)"}
+        shippingMethod={`${DEFAULT_COURIER} (${paid ? "Prepaid" : "COD"})`}
       />
     </div>
   );

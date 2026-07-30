@@ -20,6 +20,10 @@ export type Addr = {
 export const DEFAULT_EMAIL = "mohit.jain@gmail.com";
 export const DEFAULT_PHONE = "+91 98110 26538";
 export const DEFAULT_COUNTRY = "India";
+/** UPI VPA — the way most Indian orders are actually paid, cards a distant second. */
+export const DEFAULT_UPI = "mohit.jain@okhdfcbank";
+/** Courier on the order. Clickpost integrates the Indian carriers; Delhivery is one. */
+export const DEFAULT_COURIER = "Delhivery Surface";
 
 /**
  * The shopper's address as they typed it — a DLF Golf Course Road address in

@@ -1,7 +1,8 @@
 "use client";
 
-import { CreditCard } from "lucide-react";
+import { Smartphone } from "lucide-react";
 import type { Addr } from "./DemoMock";
+import { DEFAULT_COURIER, DEFAULT_UPI } from "@/lib/demo-customer";
 
 // Official Indian state/UT codes (the ones used on GST registrations and courier
 // manifests). Anything unmapped falls through to the full name.
@@ -33,15 +34,15 @@ export function OrderDetails({
   country,
   amount,
   paymentLabel,
-  paymentIcon: PaymentIcon = CreditCard,
-  shippingMethod = "Standard",
+  paymentIcon: PaymentIcon = Smartphone,
+  shippingMethod = DEFAULT_COURIER,
 }: {
   addr: Addr;
   email: string;
   phone: string;
   country: string;
   amount: string;
-  /** Override the card line — e.g. "Cash on Delivery (COD)" on an unpaid COD order. */
+  /** Override the payment line — e.g. "Cash on Delivery (COD)" on an unpaid COD order. */
   paymentLabel?: string;
   paymentIcon?: React.ComponentType<{ className?: string }>;
   shippingMethod?: string;
@@ -66,7 +67,7 @@ export function OrderDetails({
             <span className="flex h-6 w-9 shrink-0 items-center justify-center rounded border border-border bg-neutral-50">
               <PaymentIcon className="size-4 text-neutral-400" />
             </span>
-            <span className="text-neutral-700">{paymentLabel ?? `•••• 1 · ${amount}`}</span>
+            <span className="text-neutral-700">{paymentLabel ?? `UPI · ${DEFAULT_UPI} · ${amount}`}</span>
           </div>
         </Block>
         <Block label="Shipping address">

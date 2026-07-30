@@ -538,12 +538,12 @@ export const mockStore: DemoStore = {
   brandColor: "#1f7a5a",
   currency: "INR",
   products: [
-    { id: "p1", title: "Everyday Glow Makeup Set", variant: "Full kit", price: 2499, qty: 1, image: UNSPLASH("1596462502278-27bfdc403348") },
-    { id: "p2", title: "Flowy Evening Gown", variant: "Red · M", price: 4499, qty: 1, image: UNSPLASH("1595777457583-95e059d581b8") },
-    { id: "p3", title: "Vitamin C Face Serum", variant: "30 ml", price: 899, qty: 1, image: UNSPLASH("1631730359585-38a4935cbec4") },
-    { id: "p4", title: "Structured Leather Handbag", variant: "Coral", price: 5999, qty: 1, image: UNSPLASH("1584917865442-de89df76afd3") },
-    { id: "p5", title: "Nourishing Body Lotion", variant: "200 ml", price: 649, qty: 1, image: UNSPLASH("1620916566398-39f1143ab7be") },
-    { id: "p6", title: "Round Metal Sunglasses", variant: "Gold", price: 1899, qty: 1, image: UNSPLASH("1511499767150-a48a237f0083") },
+    { id: "p1", title: "Ubtan Glow Ritual Kit", variant: "Full kit", price: 2499, qty: 1, image: UNSPLASH("1596462502278-27bfdc403348") },
+    { id: "p2", title: "Anarkali Kurta Set", variant: "Rani Pink · M", price: 4499, qty: 1, image: UNSPLASH("1595777457583-95e059d581b8") },
+    { id: "p3", title: "Kumkumadi Radiance Face Oil", variant: "30 ml", price: 899, qty: 1, image: UNSPLASH("1631730359585-38a4935cbec4") },
+    { id: "p4", title: "Handcrafted Leather Sling Bag", variant: "Tan", price: 5999, qty: 1, image: UNSPLASH("1584917865442-de89df76afd3") },
+    { id: "p5", title: "Kokum Butter Body Lotion", variant: "200 ml", price: 649, qty: 1, image: UNSPLASH("1620916566398-39f1143ab7be") },
+    { id: "p6", title: "Retro Round Sunglasses", variant: "Gold", price: 1899, qty: 1, image: UNSPLASH("1511499767150-a48a237f0083") },
   ],
 };
 
