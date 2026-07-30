@@ -2,19 +2,19 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronDown, ChevronRight, Globe, MapPin, Pencil, Play, Sparkles, TrendingUp } from "lucide-react";
-import type { DemoStore, DemoProduct } from "@/lib/site";
+import { Check, ChevronDown, ChevronRight, Globe, MapPin, Pencil, Play, Sparkles, Wallet } from "lucide-react";
+import type { DemoStore } from "@/lib/site";
 import type { Addr } from "./DemoMock";
 import { DemoMock } from "./DemoMock";
-import { OneTapUpsellMock } from "./OneTapUpsellMock";
+import { CodToPrepaidMock } from "./CodToPrepaidMock";
 import { TourOverlay, type TourRect } from "./TourOverlay";
 import { ShopifyAppStoreBadge } from "./ShopifyAppStoreBadge";
 import { BuiltForShopifyBadge } from "./BuiltForShopifyBadge";
 
 const APP_URL = "https://apps.shopify.com/clickpost-order-edit-cancel";
 
-type Tab = "editing" | "upsell" | "address" | "cancel";
-type Tour = "editing" | "upsell" | "address";
+type Tab = "editing" | "cod-prepaid" | "address" | "cancel";
+type Tour = "editing" | "cod-prepaid" | "address";
 type Section = "contact" | "shipping" | "order" | "discount" | "cancel";
 
 /**
@@ -27,7 +27,7 @@ const CORRECTED_ADDRESS: Partial<Addr> = { line1: "C-42, Greater Kailash I", cit
 /** Left-rail features, each with an icon. */
 const NAV_FEATURES: { key: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { key: "editing", label: "Order editing", icon: Pencil },
-  { key: "upsell", label: "Post-purchase upsell", icon: TrendingUp },
+  { key: "cod-prepaid", label: "COD to Prepaid", icon: Wallet },
   { key: "address", label: "Address validation", icon: MapPin },
 ];
 
@@ -170,59 +170,36 @@ const EDITING_TOUR_STEPS: TourStepDef[] = [
   },
 ];
 
-const UPSELL_TOUR_STEPS: TourStepDef[] = [
+const COD_PREPAID_TOUR_STEPS: TourStepDef[] = [
   {
-    id: "upsell-offer",
-    title: "One tap to add",
-    desc: "A one-time deal the instant they pay — tap Add and it's charged to the card on file, no re-checkout.",
+    id: "cod-offer",
+    title: "Turn COD into prepaid",
+    desc: "COD orders are the ones that bounce back. On the order status page the shopper is offered an extra discount to pay up front — tap Pay Now and the order is settled before it ships.",
     cta: "Next",
-    measureDelayMs: 320,
-    spotlightId: "upsell-offer",
-    dotId: "upsell-add",
-    autoClickId: "upsell-add", // tap Add → adds the offer
+    measureDelayMs: 380,
+    spotlightId: "cod-offer",
+    dotId: "cod-pay", // one red dot — straight on the Pay Now button
+    autoClickId: "cod-pay",
+    scrollAlignTop: true, // the offer card is tall; pin it to the top of the window
+    seamless: true, // keep the highlight while it flips to the paid state
+    advanceDelayMs: 1500,
   },
   {
-    id: "ty-ship",
-    title: "Nudge to free shipping",
-    desc: "On the order status page, shoppers see they're one best-seller away from free shipping. Tap Add and it drops into their order.",
-    cta: "Next",
-    measureDelayMs: 420,
-    spotlightId: "ty-ship",
-    dotId: "ty-ship-add", // tap the Add button in the free-shipping bucket
-    autoClickId: "ty-ship-add",
-    scrollAlignTop: true, // keep the "away from free shipping" line inside the highlight
-    cardAbove: true,
-    seamless: true, // keep the highlight; show the "added to cart" toast, then advance
-    advanceDelayMs: 2300,
-  },
-  {
-    id: "ty-show",
-    title: "Add more, right here",
-    desc: "Recommend add-ons on the order status page too. Tap Add and it drops into their order — they settle the balance at the end.",
-    cta: "Next",
-    measureDelayMs: 420,
-    spotlightId: "ty-grid",
-    dotId: "ty-add",
-    autoClickId: "ty-add", // tap Add → adds the item
-    seamless: true, // show the "added to cart" toast, then advance
-    advanceDelayMs: 2300,
-    cardAbove: true, // below covers the "Explore all products" button
-  },
-  {
-    // added item creates a balance — pay it (same as order editing) before moving on
-    id: "ty-pay",
+    // the card has flipped to "now prepaid" — let it land, no new box
+    id: "cod-paid",
     title: "",
     desc: "",
     cta: "Next",
-    measureDelayMs: 460,
+    measureDelayMs: 420,
     hideCard: true,
-    spotlightId: "pay-panel",
-    dotId: "pay-btn",
-    autoClickId: "pay-btn",
+    spotlightId: "cod-offer",
+    dotId: "cod-offer",
+    autoAdvanceMs: 2600,
+    scrollAlignTop: true,
   },
   {
-    // end of the post-purchase upsell tour → conversion screen
-    id: "upsell-finish",
+    // end of the COD-to-prepaid tour → hands off to address validation
+    id: "cod-finish",
     title: "",
     desc: "",
     cta: "Finish",
@@ -272,18 +249,18 @@ const ADDRESS_TOUR_STEPS: TourStepDef[] = [
 
 const TOUR_STEPS: Record<Tour, TourStepDef[]> = {
   editing: EDITING_TOUR_STEPS,
-  upsell: UPSELL_TOUR_STEPS,
+  "cod-prepaid": COD_PREPAID_TOUR_STEPS,
   address: ADDRESS_TOUR_STEPS,
 };
 
 // Order features run in — the finale "Watch next" CTA chains to the next one.
 // Address validation is last, so it ends on the conversion box.
-const TOUR_ORDER: Tour[] = ["editing", "upsell", "address"];
+const TOUR_ORDER: Tour[] = ["editing", "cod-prepaid", "address"];
 
 // One-line pitch shown on the "up next" hand-off box before each feature's tour.
 const FEATURE_INTRO: Record<Tour, string> = {
   editing: "Let shoppers edit their own orders — swaps, add-ons, quantities — without a support ticket.",
-  upsell: "One-tap offers right after checkout that lift average order value with zero extra ad spend.",
+  "cod-prepaid": "Offer COD shoppers a discount to pay up front — less cash on delivery, far less RTO.",
   address: "Catch undeliverable addresses before they ship — fewer failed deliveries and RTO.",
 };
 
@@ -295,17 +272,19 @@ function ClickpostMark({ className }: { className?: string }) {
   );
 }
 
-/** Per-feature CTA copy: a store-specific headline verb + one real brand proof point. */
-const FINALE: Record<Tab, { action: string; brand: string; stat: string }> = {
+/**
+ * Per-feature CTA copy. Only `action` is rendered (see ReadyToTryBox); `brand` and
+ * `stat` are real merchant results kept for when the box shows a proof point again —
+ * which is why COD-to-Prepaid has none rather than an invented number.
+ */
+const FINALE: Record<Tab, { action: string; brand?: string; stat?: string }> = {
   editing: {
     action: "cut support tickets",
     brand: "Doonails",
     stat: "deflected 58% of “where’s my order” tickets and saved ₹10L a month.",
   },
-  upsell: {
-    action: "boost AOV",
-    brand: "Mars by GHC",
-    stat: "lifted AOV 23% and added ₹15L in post-purchase upsell this month.",
+  "cod-prepaid": {
+    action: "convert COD to prepaid",
   },
   address: {
     action: "stop failed deliveries",
@@ -349,9 +328,7 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
   const [tab, setTab] = useState<Tab>("editing");
   const [featureMenuOpen, setFeatureMenuOpen] = useState(false); // mobile feature dropdown
   const [activePill, setActivePill] = useState<ActionPill["key"]>("tour");
-  const [upsellView, setUpsellView] = useState<"thankyou" | "onetap">("onetap");
   const [editView, setEditView] = useState<"thankyou" | "orderstatus">("thankyou"); // order-edit surface
-  const [upsellExtras, setUpsellExtras] = useState<DemoProduct[]>([]); // offers accepted on the one-tap page
 
   // lifted tour state
   const [activeTour, setActiveTour] = useState<Tour | null>(null);
@@ -369,7 +346,7 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
   const [qtyBump, setQtyBump] = useState(0); // tour: add one more of the first item
   const [demoResetKey, setDemoResetKey] = useState(0); // bump to remount the demo fresh
   const [addrResetKey, setAddrResetKey] = useState(0); // bump to remount the address-validation window fresh
-  const [upsellResetKey, setUpsellResetKey] = useState(0); // bump to remount the upsell windows fresh
+  const [codResetKey, setCodResetKey] = useState(0); // bump to remount the COD-to-prepaid window fresh (offer un-paid)
 
   // start the editing tour from a clean demo (original 2-item order, fresh timer, nothing highlighted)
   function resetDemo() {
@@ -394,23 +371,19 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
   const payPanelRef = useRef<HTMLDivElement>(null);
   const payBtnRef = useRef<HTMLButtonElement>(null);
   const sectionsRef = useRef<HTMLDivElement>(null);
-  const upsellToggleRef = useRef<HTMLDivElement>(null);
-  const upsellOfferRef = useRef<HTMLDivElement>(null);
-  const upsellAddBtnRef = useRef<HTMLButtonElement>(null);
-  const tyGridRef = useRef<HTMLDivElement>(null);
-  const tyAddBtnRef = useRef<HTMLButtonElement>(null);
-  const tyShipRef = useRef<HTMLDivElement>(null);
-  const tyShipAddRef = useRef<HTMLButtonElement>(null);
+  // COD-to-prepaid tour targets
+  const codOfferRef = useRef<HTMLDivElement>(null);
+  const codPayBtnRef = useRef<HTMLButtonElement>(null);
   // address-validation tour targets
   const addrSaveBtnRef = useRef<HTMLButtonElement>(null);
   const addrFlaggedRef = useRef<HTMLDivElement>(null);
   const addrShippingRowRef = useRef<HTMLDivElement>(null);
   // rail feature-card refs (for highlighting the "next" feature on outcome steps)
   const editingCardRef = useRef<HTMLButtonElement>(null);
-  const upsellCardRef = useRef<HTMLButtonElement>(null);
+  const codCardRef = useRef<HTMLButtonElement>(null);
   const addressCardRef = useRef<HTMLButtonElement>(null);
   const cardRefs: Partial<Record<Tab, React.RefObject<HTMLButtonElement | null>>> = {
-    editing: editingCardRef, upsell: upsellCardRef, address: addressCardRef,
+    editing: editingCardRef, "cod-prepaid": codCardRef, address: addressCardRef,
   };
   const pauseTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -448,17 +421,12 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
       case "pay-panel": return payPanelRef.current;
       case "pay-btn": return payBtnRef.current;
       case "others": return sectionsRef.current;
-      case "to-upsell": return upsellCardRef.current;
+      case "to-cod": return codCardRef.current;
       case "to-address": return addressCardRef.current;
-      case "feature-upsell": return upsellCardRef.current;
+      case "feature-cod": return codCardRef.current;
       case "feature-address": return addressCardRef.current;
-      case "upsell-toggle": return upsellToggleRef.current;
-      case "upsell-offer": return upsellOfferRef.current;
-      case "upsell-add": return upsellAddBtnRef.current;
-      case "ty-grid": return tyGridRef.current;
-      case "ty-add": return tyAddBtnRef.current;
-      case "ty-ship": return tyShipRef.current;
-      case "ty-ship-add": return tyShipAddRef.current;
+      case "cod-offer": return codOfferRef.current;
+      case "cod-pay": return codPayBtnRef.current;
       case "addr-validate": return addrSaveBtnRef.current;
       case "addr-flagged": return addrFlaggedRef.current;
       default: return null;
@@ -495,24 +463,13 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
         // collapse the editing sections so the balance-due panel is the focus
         setTourForcedOpen(null);
         break;
-      case "to-upsell":
-        // close every editing section before handing off to the upsell
+      case "to-cod":
+      case "to-address":
+        // close every editing section before handing off to the next feature
         setTourForcedOpen(null);
         break;
-      case "upsell-toggle":
-      case "upsell-offer":
-      case "upsell-add":
-        setUpsellView("onetap");
-        break;
-      case "ty-ship":
-      case "ty-show":
-      case "ty-add":
-      case "ty-pay":
-      case "to-address":
-        setUpsellView("thankyou");
-        break;
       default:
-        // address steps + outcome steps: nothing to pre-open
+        // COD-to-prepaid, address and outcome steps: nothing to pre-open
         break;
     }
     setTourStep(idx);
@@ -532,8 +489,8 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
     setSpotlightRect(null);
     setActivePill("tour");
     setTourForcedOpen(null);
-    // the Upsell tour always begins on the one-tap offer view
-    if (t === "upsell") { setUpsellView("onetap"); setUpsellExtras([]); }
+    // the COD tour must begin on an unpaid order, so remount the offer card
+    if (t === "cod-prepaid") setCodResetKey((k) => k + 1);
     setTab(t);
     setPendingTour(t);
   }
@@ -616,8 +573,8 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
     setPendingTour(null);
     setActivePill("tour");
     setTourForcedOpen(null);
-    // tapping the Upsell feature always opens the One-tap view first
-    if (k === "upsell") { setUpsellView("onetap"); setUpsellExtras([]); }
+    // tapping COD to Prepaid always shows the offer un-taken
+    if (k === "cod-prepaid") setCodResetKey((n) => n + 1);
     setTab(k);
   }
 
@@ -904,26 +861,6 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
               </div>
             )}
 
-            {/* Upsell sub-tabs — in the top bar (Upsell feature only) */}
-            {tab === "upsell" && (
-              <div ref={upsellToggleRef} className="flex shrink-0 items-center gap-1 rounded-full bg-white/70 p-1 shadow-soft-md ring-1 ring-neutral-200">
-                {([["onetap", "One tap upsell"], ["thankyou", "Order status page"]] as const).map(([key, label]) => {
-                  const active = upsellView === key;
-                  return (
-                    <button
-                      key={key}
-                      onClick={() => { setUpsellView(key); if (key === "onetap") setUpsellExtras([]); }}
-                      className={`whitespace-nowrap rounded-full px-4 py-1.5 text-[12px] font-semibold transition-colors ${
-                        active ? "bg-white text-neutral-900 shadow-sm" : "text-neutral-500 hover:text-neutral-800"
-                      }`}
-                    >
-                      {label}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-
             <a
               href={APP_URL}
               target="_blank"
@@ -963,7 +900,7 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
             </div>
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
-                key={tab === "upsell" ? `upsell-${upsellView}` : tab === "editing" ? `editing-${editView}` : tab}
+                key={tab === "editing" ? `editing-${editView}` : tab}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
@@ -982,27 +919,14 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
                     qtyBump={qtyBump}
                   />
                 )}
-                {tab === "upsell" && (
-                  upsellView === "thankyou" ? (
-                    <DemoMock
-                      key={`ty-demo-${upsellResetKey}`}
+                {tab === "cod-prepaid" && (
+                  <div className="overflow-y-auto" style={{ maxHeight: 560 }}>
+                    <CodToPrepaidMock
+                      key={`cod-${codResetKey}`}
                       store={store}
-                      initialOpen={null}
-                      maxHeight={560}
-                      upsellFirst
-                      extraItems={upsellExtras}
-                      tourRefs={{ upsellRow: tyGridRef, upsellAddBtn: tyAddBtnRef, upsellShipBox: tyShipRef, upsellShipAddBtn: tyShipAddRef, payPanel: payPanelRef, payBtn: payBtnRef }}
+                      tourRefs={{ offerCard: codOfferRef, payBtn: codPayBtnRef }}
                     />
-                  ) : (
-                    <OneTapUpsellMock
-                      key={`onetap-${upsellResetKey}`}
-                      store={store}
-                      addBtnRef={upsellAddBtnRef}
-                      offerRef={upsellOfferRef}
-                      onComplete={(added) => { setUpsellExtras(added); setUpsellView("thankyou"); }}
-                      onViewOrder={() => { setUpsellExtras([]); setUpsellView("thankyou"); }}
-                    />
-                  )
+                  </div>
                 )}
                 {tab === "address" && (
                   <DemoMock

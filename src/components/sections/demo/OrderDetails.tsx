@@ -32,12 +32,19 @@ export function OrderDetails({
   phone,
   country,
   amount,
+  paymentLabel,
+  paymentIcon: PaymentIcon = CreditCard,
+  shippingMethod = "Standard",
 }: {
   addr: Addr;
   email: string;
   phone: string;
   country: string;
   amount: string;
+  /** Override the card line — e.g. "Cash on Delivery (COD)" on an unpaid COD order. */
+  paymentLabel?: string;
+  paymentIcon?: React.ComponentType<{ className?: string }>;
+  shippingMethod?: string;
 }) {
   const lines = [
     `${addr.first} ${addr.last}`,
@@ -57,9 +64,9 @@ export function OrderDetails({
         <Block label="Payment method">
           <div className="flex items-center gap-2">
             <span className="flex h-6 w-9 shrink-0 items-center justify-center rounded border border-border bg-neutral-50">
-              <CreditCard className="size-4 text-neutral-400" />
+              <PaymentIcon className="size-4 text-neutral-400" />
             </span>
-            <span className="text-neutral-700">•••• 1 · {amount}</span>
+            <span className="text-neutral-700">{paymentLabel ?? `•••• 1 · ${amount}`}</span>
           </div>
         </Block>
         <Block label="Shipping address">
@@ -69,7 +76,7 @@ export function OrderDetails({
           {lines.map((l, i) => <div key={i}>{l}</div>)}
         </Block>
         <Block label="Shipping method">
-          <div>Standard</div>
+          <div>{shippingMethod}</div>
         </Block>
       </div>
     </div>
