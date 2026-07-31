@@ -108,22 +108,26 @@ const displayedReviews: Review[] = rankedReviews.slice(0, MAX_REVIEWS_COUNT);
 
 // How many top rows stay pinned in ranked order (the popular brand-strip names).
 const PINNED_ROWS = 3;
-const GAP = 24; // matches the flex `gap-6` between cards
+/** Pixel gap for each breakpoint — must track `gap-3 sm:gap-4 lg:gap-6` in the markup. */
+const gapFor = (w: number) => (w < 640 ? 12 : w < 1024 ? 16 : 24);
 
 export default function ReviewsPage() {
   const [visibleCount, setVisibleCount] = useState(INITIAL_COUNT);
   const [cols, setCols] = useState(3);
+  const [gap, setGap] = useState(24);
   // Real, measured card heights (id -> px). Estimate is only a first-paint fallback.
   const [heights, setHeights] = useState<Record<string, number>>({});
   const cardEls = useRef<Map<string, HTMLDivElement>>(new Map());
 
   const visible = displayedReviews.slice(0, visibleCount);
 
-  // responsive column count
+  // Responsive column count. Three columns hold from 640px up — the cards shrink
+  // to suit (see ReviewCard) rather than the wall dropping to two.
   useEffect(() => {
     const calc = () => {
       const w = window.innerWidth;
-      setCols(w < 640 ? 1 : w < 1024 ? 2 : 3);
+      setCols(w < 480 ? 1 : w < 640 ? 2 : 3);
+      setGap(gapFor(w));
     };
     calc();
     window.addEventListener("resize", calc);
@@ -163,7 +167,7 @@ export default function ReviewsPage() {
     const h = (r: Review) => heights[r.id] ?? 150 + Math.ceil(r.content.length / 38) * 26;
     const place = (r: Review, b: (typeof buckets)[number]) => {
       b.items.push(r);
-      b.h += h(r) + GAP;
+      b.h += h(r) + gap;
     };
 
     const pinned = Math.min(PINNED_ROWS * cols, visible.length);
@@ -176,7 +180,7 @@ export default function ReviewsPage() {
       place(r, shortest);
     }
     return buckets.map((b) => b.items);
-  }, [visible, cols, heights]);
+  }, [visible, cols, heights, gap]);
 
   const handleShowMore = () => {
     setVisibleCount((prev) => Math.min(prev + INCREMENT_COUNT, displayedReviews.length));
@@ -242,9 +246,9 @@ export default function ReviewsPage() {
           </div>
 
           {/* Balanced masonry: each card placed in the shortest column, no big gaps */}
-          <div className="flex items-start gap-6">
+          <div className="flex items-start gap-3 sm:gap-4 lg:gap-6">
             {columns.map((col, i) => (
-              <div key={i} className="flex flex-1 flex-col gap-6">
+              <div key={i} className="flex flex-1 flex-col gap-3 sm:gap-4 lg:gap-6">
                 {col.map((review) => (
                   <div
                     key={review.id}
