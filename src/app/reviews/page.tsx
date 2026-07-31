@@ -133,6 +133,12 @@ export default function ReviewsPage() {
   // After render, measure the real height of every card so balancing is accurate
   // (the content-length estimate misjudged some cards, leaving ragged columns).
   // Card width only depends on `cols`, so heights are valid across arrangements.
+  //
+  // Depend on visibleCount, NOT `visible`: that array is rebuilt on every render,
+  // so it re-ran this effect every time, and the setHeights dispatch made React
+  // render once more before bailing out — which re-ran the effect, forever. At one
+  // column the masonry also reorders on each measurement, so it never settled and
+  // the page died with "Maximum update depth exceeded".
   useLayoutEffect(() => {
     setHeights((prev) => {
       let changed = false;
@@ -146,7 +152,7 @@ export default function ReviewsPage() {
       });
       return changed ? next : prev;
     });
-  }, [visible, cols]);
+  }, [visibleCount, cols]);
 
   // Masonry layout:
   //  1. keep the top PINNED_ROWS in ranked order, row-major (popular brands on top);
