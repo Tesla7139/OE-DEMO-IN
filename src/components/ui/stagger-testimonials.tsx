@@ -36,7 +36,9 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ position, review, han
     <div
       onClick={() => handleMove(position)}
       className={cn(
-        "absolute left-1/2 top-1/2 cursor-pointer border-2 p-8 transition-all duration-[350ms] ease-in-out",
+        // flex column: the card is a fixed square, so the quote has to be the part
+        // that gives — otherwise a long review runs straight through the footer.
+        "absolute left-1/2 top-1/2 flex cursor-pointer flex-col border-2 p-8 transition-all duration-[350ms] ease-in-out",
         isCenter
           ? "z-10 border-[#a8c8ff] text-foreground"
           : "z-0 border-border bg-card text-card-foreground hover:border-primary/50"
@@ -84,12 +86,14 @@ const TestimonialCard: React.FC<TestimonialCardProps> = ({ position, review, han
         </div>
       </div>
 
-      <h3 className="text-[14px] font-medium leading-snug text-foreground sm:text-[15.5px]">
+      {/* The quote takes the leftover space and clamps inside it, so it can never
+          reach the footer. min-h-0 lets it actually shrink inside the flex column. */}
+      <h3 className="line-clamp-[7] min-h-0 flex-1 overflow-hidden text-[14px] font-medium leading-snug text-foreground sm:line-clamp-[11] sm:text-[15.5px]">
         &ldquo;{review.review}&rdquo;
       </h3>
 
       <div className={cn(
-        "absolute bottom-8 left-8 right-8 text-[13px]",
+        "mt-auto pt-4 text-[13px]",
         isCenter ? "text-neutral-600" : "text-muted-foreground"
       )}>
         <div className="flex items-baseline justify-between gap-2 font-semibold">
