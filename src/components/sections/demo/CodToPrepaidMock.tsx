@@ -183,10 +183,11 @@ function OfferCard({
     onAdd(product, deal);
   };
 
+  // nowrap so a long price breaks between the two amounts, never mid-number
   const priceRow = (
-    <div className="flex items-baseline gap-2">
-      <span className="text-[13px] text-neutral-400 line-through">{fmt(product.price)}</span>
-      <span className="text-[14px] font-bold text-emerald-700">{fmt(deal)}</span>
+    <div className="flex flex-wrap items-baseline gap-x-2">
+      <span className="whitespace-nowrap text-[13px] text-neutral-400 line-through">{fmt(product.price)}</span>
+      <span className="whitespace-nowrap text-[14px] font-bold text-emerald-700">{fmt(deal)}</span>
     </div>
   );
 
@@ -245,16 +246,22 @@ function OfferCard({
   }
 
   return (
+    // Cards stretch to the tallest in the row, so the title gets an exact two-line
+    // box (2 × leading-snug) and the variant + action are pinned to the bottom.
+    // Otherwise a one-line title lifts the price and button out of line with the
+    // cards beside it.
     <div className="flex w-[190px] shrink-0 flex-col gap-2.5 rounded-xl border border-border p-3">
       <div className="aspect-square w-full overflow-hidden rounded-lg border border-border">
         <DemoImg src={product.image} alt={product.title} className="size-full object-cover" />
       </div>
-      <div className="line-clamp-2 min-h-[2.5em] text-[13px] font-semibold leading-snug text-neutral-900">
+      <div className="line-clamp-2 h-[2.75em] text-[13px] font-semibold leading-snug text-neutral-900">
         {product.title}
       </div>
       {priceRow}
-      <VariantSelect label={variantLabel} />
-      {addBtn}
+      <div className="mt-auto flex flex-col gap-2.5">
+        <VariantSelect label={variantLabel} />
+        {addBtn}
+      </div>
     </div>
   );
 }
