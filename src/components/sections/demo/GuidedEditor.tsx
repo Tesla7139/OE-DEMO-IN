@@ -920,13 +920,12 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
                   />
                 )}
                 {tab === "cod-prepaid" && (
-                  <div className="overflow-y-auto" style={{ maxHeight: 560 }}>
-                    <CodToPrepaidMock
-                      key={`cod-${codResetKey}`}
-                      store={store}
-                      tourRefs={{ offerCard: codOfferRef, payBtn: codPayBtnRef }}
-                    />
-                  </div>
+                  <CodToPrepaidMock
+                    key={`cod-${codResetKey}`}
+                    store={store}
+                    maxHeight={560}
+                    tourRefs={{ offerCard: codOfferRef, payBtn: codPayBtnRef }}
+                  />
                 )}
                 {tab === "address" && (
                   <DemoMock

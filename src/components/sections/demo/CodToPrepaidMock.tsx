@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -11,6 +11,7 @@ import {
   Loader2,
   Lock,
   Smartphone,
+  Tag,
   TriangleAlert,
 } from "lucide-react";
 import type { DemoProduct, DemoStore } from "@/lib/site";
@@ -270,6 +271,7 @@ export function CodToPrepaidMock({
   store,
   tourRefs,
   onPaid,
+  maxHeight,
 }: {
   store: DemoStore;
   tourRefs?: {
@@ -277,6 +279,8 @@ export function CodToPrepaidMock({
     payBtn?: React.RefObject<HTMLButtonElement | null>;
   };
   onPaid?: () => void;
+  /** Caps the window and scrolls inside it, matching the order-editing window. */
+  maxHeight?: number;
 }) {
   const brand = readableBrand(store.brandColor);
   const currency = store.currency || "INR";
@@ -371,25 +375,37 @@ export function CodToPrepaidMock({
   const orderTotal = round2((paid ? prepaidTotal : codTotal) + extrasTotal);
 
   return (
-    <div className="flex flex-col gap-4 bg-neutral-50 p-4 lg:p-5">
-      {/* ---------- order confirmed: the thank-you line leads the page ---------- */}
-      <div className="flex items-center gap-3 rounded-xl border border-border bg-white p-4">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-full border-2 border-emerald-600">
-          <Check className="size-4 text-emerald-700" strokeWidth={3} />
-        </span>
-        <div className="min-w-0">
-          <div className="text-[12px] text-neutral-500">Confirmation #{CONFIRMATION}</div>
-          <div className="text-[17px] font-bold leading-tight text-neutral-900">
-            Thank you, {DEFAULT_ADDR.first}!
-          </div>
-        </div>
-      </div>
+    <div className="relative w-full text-left">
+      <div className="bg-white">
+        {/* Same two-column shell as the order-editing window: actions on the left,
+            order summary in a right-hand aside. */}
+        <div
+          className={`grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_270px] ${maxHeight ? "lg:no-scrollbar lg:h-[var(--demo-h)] lg:overflow-y-auto" : ""}`}
+          style={maxHeight ? ({ "--demo-h": `${maxHeight}px` } as CSSProperties) : undefined}
+        >
+          {/* ================= LEFT: confirmation, prepaid nudge, offers ================= */}
+          <div className="border-border p-4 lg:border-r">
+            {/* confirmation header — pinned at the very top, as in the editing window */}
+            <div className="mb-3 flex items-center gap-3">
+              <span
+                className="flex size-8 shrink-0 items-center justify-center rounded-full border-2"
+                style={{ borderColor: brand, color: brand }}
+              >
+                <Check className="size-4" strokeWidth={3} />
+              </span>
+              <div className="min-w-0">
+                <div className="text-xs text-neutral-500">Confirmation #{CONFIRMATION}</div>
+                <div className="text-lg font-bold text-neutral-900">
+                  Thank you, {DEFAULT_ADDR.first}!
+                </div>
+              </div>
+            </div>
 
-      {/* ---------- the prepaid nudge (or its paid confirmation) ---------- */}
-      <div
-        ref={tourRefs?.offerCard}
-        className="relative overflow-hidden rounded-2xl border border-border bg-white p-4 shadow-soft-sm lg:p-5"
-      >
+            {/* ---------- the prepaid nudge (or its paid confirmation) ---------- */}
+            <div
+              ref={tourRefs?.offerCard}
+              className="relative overflow-hidden rounded-xl border border-border bg-white p-4"
+            >
         <AnimatePresence mode="wait" initial={false}>
           {!paid ? (
             <motion.div
@@ -471,156 +487,188 @@ export function CodToPrepaidMock({
         </AnimatePresence>
       </div>
 
-      {/* ---------- order header ---------- */}
-      <div className="flex items-center justify-between gap-4">
-        <div>
-          <h2 className="text-[20px] font-bold leading-tight text-neutral-900">Order 57600</h2>
-          <p className="mt-0.5 text-[13px] text-neutral-500">Confirmed today</p>
-        </div>
-        <button className="shrink-0 rounded-lg border border-border bg-white px-4 py-2 text-[13px] font-semibold text-neutral-700 transition-colors hover:bg-neutral-50">
-          Buy again
-        </button>
-      </div>
-
-      {/* ---------- payment state ---------- */}
-      <div className="rounded-xl border border-border bg-white p-4">
-        <div className="text-[15px] font-bold text-neutral-900">
-          {fmt(orderTotal)} {currency}
-        </div>
-        <p className="mt-1 text-[13px] leading-relaxed text-neutral-500">
-          {balanceDue > 0
-            ? `${fmt(balanceDue)} is outstanding for the items you just added.`
-            : paid
-              ? "Payment received. This order is fully paid and moves straight to fulfillment."
-              : "This order has a pending payment. The balance will be updated when payment is received."}
-        </p>
-      </div>
-
-      {/* ---------- "Too good to miss !" offer scroller ---------- */}
-      {tiles.length > 0 && (
-        <div className="rounded-xl border border-border bg-white p-4 lg:p-5">
-          <h3 className="text-[16px] font-bold text-neutral-900">Too good to miss !</h3>
-          <div className="mt-3.5 flex gap-3 overflow-x-auto pb-2">
-            {tiles.map((p) => (
-              <OfferCard key={p.id} product={p} brand={brand} currency={currency} layout="tile" qty={extras.find((x) => x.id === p.id)?.qty ?? 0} disabled={!!busy} onAdd={addExtra} onQty={setExtraQty} />
-            ))}
-          </div>
-        </div>
-      )}
-
-      {/* ---------- order summary ---------- */}
-      <div className="rounded-xl border border-border bg-white p-4 lg:p-5">
-        <div className="flex items-center gap-3">
-          <div className="relative size-12 shrink-0 overflow-hidden rounded-lg border border-border">
-            <DemoImg src={product?.image} alt={product?.title ?? "Item"} className="size-full object-cover" />
-            <span className="absolute -right-1 -top-1 flex size-4.5 items-center justify-center rounded-full bg-neutral-900 px-1 text-[10px] font-bold text-white">
-              1
-            </span>
-          </div>
-          <div className="min-w-0 flex-1 text-[14px] font-semibold text-neutral-900">
-            {product?.title ?? "Item"}
-          </div>
-          <div className="text-[14px] font-semibold text-neutral-900">{fmt(subtotal)}</div>
-        </div>
-
-        {/* items added after checkout, each at its offer price */}
-        {extras.map((x) => (
-          <div key={x.id} className="mt-3 flex items-start justify-between gap-3 border-t border-border pt-3">
-            <div className="min-w-0">
-              <div className="text-[13.5px] font-semibold text-neutral-900">
-                {x.title}
-                {x.qty > 1 && <span className="text-neutral-400"> × {x.qty}</span>}
+            {/* ---------- "Too good to miss !" offer scroller ---------- */}
+            {tiles.length > 0 && (
+              <div className="mt-4 rounded-xl border border-border bg-white p-4">
+                <h3 className="text-[15px] font-bold text-neutral-900">Too good to miss !</h3>
+                <div className="mt-3 flex gap-3 overflow-x-auto pb-2">
+                  {tiles.map((p) => (
+                    <OfferCard
+                      key={p.id}
+                      product={p}
+                      brand={brand}
+                      currency={currency}
+                      layout="tile"
+                      qty={extras.find((x) => x.id === p.id)?.qty ?? 0}
+                      disabled={!!busy}
+                      onAdd={addExtra}
+                      onQty={setExtraQty}
+                    />
+                  ))}
+                </div>
               </div>
-              <span className="mt-1 inline-block rounded bg-neutral-100 px-1.5 py-0.5 text-[10px] font-bold tracking-wide text-neutral-500">
-                ADDED AFTER CHECKOUT
-              </span>
-            </div>
-            <div className="text-[13.5px] font-semibold text-neutral-900">{fmt(x.deal * x.qty)}</div>
-          </div>
-        ))}
+            )}
 
-        <div className="mt-4 border-t border-border pt-3">
-          <Row label="Subtotal" value={fmt(subtotal + extrasTotal)} />
-          <Row label="Order discount" sub={CODE_NAME} value={`-${fmt(codeDiscount)}`} />
-          <Row label="Shipping" value="Free" />
-          {paid && (
-            <Row label={`Prepaid discount (${Math.round(PREPAID_OFF * 100)}%)`} value={`-${fmt(prepaidSaving)}`} />
-          )}
-          <div className="mt-1 border-t border-border pt-2">
-            <Row
-              strong
-              label="Total"
-              value={
+            {/* ---------- "You may also like this product" ---------- */}
+            {alsoLike && (
+              <div className="mt-4 rounded-xl border border-border bg-white p-4">
+                <h3 className="text-[15px] font-bold text-neutral-900">You may also like this product</h3>
+                <div className="mt-3">
+                  <OfferCard
+                    product={alsoLike}
+                    brand={brand}
+                    currency={currency}
+                    layout="wide"
+                    qty={extras.find((x) => x.id === alsoLike.id)?.qty ?? 0}
+                    disabled={!!busy}
+                    onAdd={addExtra}
+                    onQty={setExtraQty}
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* ---------- contact / addresses / payment method ---------- */}
+            <div className="mt-4">
+              <OrderDetails
+                addr={DEFAULT_ADDR}
+                email={DEFAULT_EMAIL}
+                phone={DEFAULT_PHONE}
+                country={DEFAULT_COUNTRY}
+                amount={`${fmt(orderTotal)} ${currency}`}
+                paymentIcon={paid ? Smartphone : Banknote}
+                paymentLabel={
+                  paid
+                    ? `UPI · ${DEFAULT_UPI} · ${fmt(prepaidTotal)} ${currency}`
+                    : `Cash on Delivery (COD) · ${fmt(codTotal)} ${currency}`
+                }
+                shippingMethod={`${DEFAULT_COURIER} (${paid ? "Prepaid" : "COD"})`}
+              />
+            </div>
+          </div>
+
+          {/* ================= RIGHT: order summary ================= */}
+          <aside className="bg-neutral-50 p-4">
+            <div className="flex items-baseline justify-between gap-3">
+              <div className="min-w-0">
+                <div className="text-[15px] font-bold text-neutral-900">Order 57600</div>
+                <div className="mt-0.5 text-[12px] text-neutral-500">Confirmed today</div>
+              </div>
+              <button className="shrink-0 rounded-lg border border-border bg-white px-3 py-1.5 text-[12px] font-semibold text-neutral-700 transition-colors hover:bg-neutral-50">
+                Buy again
+              </button>
+            </div>
+
+            {/* line items: the original order, then anything added after checkout */}
+            <div className="mt-4 flex flex-col gap-3">
+              <div className="flex items-start gap-3">
+                <div className="relative shrink-0">
+                  <DemoImg
+                    src={product?.image}
+                    alt={product?.title ?? "Item"}
+                    className="size-12 rounded-lg border border-border object-cover"
+                  />
+                  <span className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-neutral-900 text-[10px] font-bold text-white">
+                    1
+                  </span>
+                </div>
+                <div className="min-w-0 flex-1 truncate text-xs font-medium text-neutral-800">
+                  {product?.title ?? "Item"}
+                </div>
+                <div className="shrink-0 text-xs font-semibold text-neutral-900">{fmt(subtotal)}</div>
+              </div>
+
+              {extras.map((x) => (
+                <div key={x.id} className="flex items-start gap-3">
+                  <span className="mt-0.5 flex size-5 shrink-0 items-center justify-center rounded-full bg-neutral-900 text-[10px] font-bold text-white">
+                    {x.qty}
+                  </span>
+                  <div className="min-w-0 flex-1">
+                    <div className="truncate text-xs font-medium text-neutral-800">{x.title}</div>
+                    <div className="mt-0.5 inline-flex items-center gap-1 text-[10px] font-semibold text-emerald-600">
+                      <Tag className="size-2.5" />
+                      ADDED AFTER CHECKOUT
+                    </div>
+                  </div>
+                  <div className="shrink-0 text-xs font-semibold text-neutral-900">
+                    {fmt(x.deal * x.qty)}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* totals */}
+            <div className="mt-5 space-y-1 border-t border-border pt-4 text-[12.5px]">
+              <Row
+                label={`Subtotal · ${1 + extras.reduce((n, x) => n + x.qty, 0)} items`}
+                value={fmt(subtotal + extrasTotal)}
+              />
+              <Row label="Order discount" sub={CODE_NAME} value={`-${fmt(codeDiscount)}`} />
+              <Row label="Shipping" value="Free" />
+              {paid && (
+                <Row
+                  label={`Prepaid discount (${Math.round(PREPAID_OFF * 100)}%)`}
+                  value={`-${fmt(prepaidSaving)}`}
+                />
+              )}
+            </div>
+            <div className="mt-3 flex items-baseline justify-between border-t border-border pt-3">
+              <span className="font-bold text-neutral-900">Total</span>
+              <span className="text-lg font-bold text-neutral-900">{fmt(orderTotal)}</span>
+            </div>
+            <div className="mt-0.5 text-[11px] text-neutral-400">Including {fmt(0)} GST</div>
+            <div className="mt-2 flex items-center gap-1.5 text-[12px] font-bold text-emerald-600">
+              <Tag className="size-3" />
+              Total savings {fmt(paid ? codeDiscount + prepaidSaving : codeDiscount)}
+            </div>
+
+            {/* how the order stands right now */}
+            <div className="mt-4 rounded-xl border border-border bg-white p-3">
+              <div className="text-[13px] font-bold text-neutral-900">
+                {fmt(orderTotal)} {currency}
+              </div>
+              <p className="mt-1 text-[11.5px] leading-snug text-neutral-500">
+                {balanceDue > 0
+                  ? `${fmt(balanceDue)} is outstanding for the items you just added.`
+                  : paid
+                    ? "Payment received. This order is fully paid."
+                    : "This order has a pending payment, collected on delivery."}
+              </p>
+            </div>
+
+            {/* ---------- balance to settle for the items just added ---------- */}
+            {balanceDue > 0 && (
+              <div className="mt-3 rounded-xl bg-amber-50 p-3">
+                <div className="flex items-baseline justify-between text-[13px]">
+                  <span className="font-medium text-neutral-700">Balance due</span>
+                  <span className="font-bold text-neutral-900">{fmt(balanceDue)}</span>
+                </div>
+                <p className="mt-1 text-[11px] leading-snug text-neutral-500">
+                  You added to your order. Pay the difference to confirm the changes.
+                </p>
+                <button
+                  onClick={payBalance}
+                  disabled={!!busy}
+                  className="mt-2.5 w-full rounded-md py-2.5 text-[13px] font-semibold text-white transition-all hover:brightness-110 active:scale-[0.99] disabled:opacity-70"
+                  style={{ background: brand }}
+                >
+                  Pay {fmt(balanceDue)}
+                </button>
+              </div>
+            )}
+
+            {balancePaid && extras.length > 0 && (
+              <div className="mt-3 flex items-start gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3 text-[12px] font-bold text-emerald-800">
+                <CircleCheck className="mt-0.5 size-3.5 shrink-0" />
                 <span>
-                  <span className="mr-1.5 text-[12px] font-medium text-neutral-400">{currency}</span>
-                  {fmt(orderTotal)}
+                  Balance paid. {fmt(extrasTotal)} charged for the added{" "}
+                  {extras.length === 1 ? "item" : "items"}.
                 </span>
-              }
-            />
-            <div className="text-[12px] text-neutral-400">Including {fmt(0)} GST</div>
-          </div>
+              </div>
+            )}
+          </aside>
         </div>
-
-        <div className="mt-3 flex items-center gap-2 border-t border-border pt-3 text-[13px] font-bold text-neutral-900">
-          <Banknote className="size-4 text-neutral-400" />
-          TOTAL SAVINGS {fmt(paid ? codeDiscount + prepaidSaving : codeDiscount)}
-        </div>
-
-        {/* ---------- balance to settle for the items just added ---------- */}
-        {balanceDue > 0 && (
-          <div className="mt-4 rounded-xl bg-amber-50 p-4">
-            <div className="flex items-baseline justify-between">
-              <span className="text-[13.5px] font-semibold text-neutral-700">Balance due</span>
-              <span className="text-[15px] font-bold text-neutral-900">{fmt(balanceDue)}</span>
-            </div>
-            <p className="mt-1 text-[12px] leading-snug text-neutral-500">
-              You added to your order. Pay the difference to confirm the changes.
-            </p>
-            <button
-              onClick={payBalance}
-              disabled={!!busy}
-              className="mt-3 w-full rounded-lg py-2.5 text-[13px] font-bold text-white transition-all hover:brightness-110 active:scale-[0.99] disabled:opacity-70"
-              style={{ background: brand }}
-            >
-              Pay {fmt(balanceDue)}
-            </button>
-          </div>
-        )}
-
-        {/* the added items are settled */}
-        {balancePaid && extras.length > 0 && (
-          <div className="mt-4 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-3.5 text-[13px] font-bold text-emerald-800">
-            <CircleCheck className="size-4 shrink-0" />
-            Balance paid. {fmt(extrasTotal)} charged for the added {extras.length === 1 ? "item" : "items"}.
-          </div>
-        )}
       </div>
-
-      {/* ---------- "You may also like this product" ---------- */}
-      {alsoLike && (
-        <div className="rounded-xl border border-border bg-white p-4 lg:p-5">
-          <h3 className="text-[16px] font-bold text-neutral-900">You may also like this product</h3>
-          <div className="mt-3.5">
-            <OfferCard product={alsoLike} brand={brand} currency={currency} layout="wide" qty={extras.find((x) => x.id === alsoLike.id)?.qty ?? 0} disabled={!!busy} onAdd={addExtra} onQty={setExtraQty} />
-          </div>
-        </div>
-      )}
-
-      {/* ---------- contact / addresses / payment method ---------- */}
-      <OrderDetails
-        addr={DEFAULT_ADDR}
-        email={DEFAULT_EMAIL}
-        phone={DEFAULT_PHONE}
-        country={DEFAULT_COUNTRY}
-        amount={`${fmt(orderTotal)} ${currency}`}
-        paymentIcon={paid ? Smartphone : Banknote}
-        paymentLabel={
-          paid
-            ? `UPI · ${DEFAULT_UPI} · ${fmt(prepaidTotal)} ${currency}`
-            : `Cash on Delivery (COD) · ${fmt(codTotal)} ${currency}`
-        }
-        shippingMethod={`${DEFAULT_COURIER} (${paid ? "Prepaid" : "COD"})`}
-      />
 
       {/* ---------- loading box, then the prompt to settle the balance ---------- */}
       <AnimatePresence>
