@@ -66,17 +66,21 @@ export function useDemoData() {
   return { status, store, submittedUrl, generate, reset };
 }
 
-// Keep every real product we captured, then top up with sample products so the demo
-// storefront always looks full — e.g. a store that only exposes 2 products shows those
-// 2 real ones plus sample items to fill the space. Real products are kept ahead of
-// samples, and titles are de-duped so a sample never repeats a real product.
-const SAMPLE_TARGET = 6;
+/**
+ * Real products only — never a mix.
+ *
+ * This used to top every store up to six items from the sample catalogue, so a
+ * sneaker store that exposed five real products got a makeup kit as the sixth. A
+ * merchant who spots something they don't sell stops believing the whole demo, and
+ * looking full is not worth that. Five real products now show as five.
+ *
+ * The sample catalogue is still the fallback when nothing could be read at all
+ * (non-Shopify sites, blocked endpoints) — that case is a generic demo, not a
+ * personalized one pretending to be theirs.
+ */
 function fillProducts(captured?: DemoProduct[]): DemoProduct[] {
   const real = captured ?? [];
-  if (real.length >= SAMPLE_TARGET) return real;
-  const seen = new Set(real.map((p) => p.title.trim().toLowerCase()));
-  const fillers = mockStore.products.filter((p) => !seen.has(p.title.trim().toLowerCase()));
-  return [...real, ...fillers].slice(0, SAMPLE_TARGET);
+  return real.length > 0 ? real : mockStore.products;
 }
 
 // Best-effort currency guess from the domain's TLD when the store's real currency
