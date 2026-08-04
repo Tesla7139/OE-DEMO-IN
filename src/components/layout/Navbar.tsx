@@ -4,10 +4,8 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { ChevronDown } from "lucide-react";
 import { Logo } from "./Logo";
-import { mainNav } from "@/lib/site";
+import { mainNav, APP_STORE_URL as SHOPIFY_LISTING } from "@/lib/site";
 import { cn } from "@/lib/utils";
-
-const SHOPIFY_LISTING = "https://apps.shopify.com/clickpost-order-edit-cancel";
 
 export function Navbar() {
   const [scrolled, setScrolled] = useState(false);

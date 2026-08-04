@@ -4,9 +4,7 @@ import { ArrowRight, LineChart, PiggyBank, PackageCheck, ExternalLink } from "lu
 import { Container } from "@/components/primitives/Container";
 import { Button } from "@/components/ui/button";
 import { AnalyticsMock } from "@/components/sections/demo/AnalyticsMock";
-import { mockStore } from "@/lib/site";
-
-const APP_URL = "https://apps.shopify.com/clickpost-order-edit-cancel";
+import { mockStore, APP_STORE_URL as APP_URL } from "@/lib/site";
 
 export const metadata: Metadata = {
   title: "Analytics & reporting",

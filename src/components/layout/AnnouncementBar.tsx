@@ -1,4 +1,4 @@
-const SHOPIFY_LISTING = "https://apps.shopify.com/clickpost-order-edit-cancel";
+import { APP_STORE_URL as SHOPIFY_LISTING } from "@/lib/site";
 
 export function AnnouncementBar() {
   return (

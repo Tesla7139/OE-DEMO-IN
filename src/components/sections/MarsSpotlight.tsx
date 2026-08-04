@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { ExternalLink, Star } from "lucide-react";
 import { Container } from "@/components/primitives/Container";
+import { APP_STORE_REVIEWS_URL } from "@/lib/site";
 import { fadeUp, staggerContainer, viewportOnce } from "@/lib/motion";
 
 const STATS = [
@@ -133,7 +134,7 @@ export function MarsSpotlight() {
 
             <div className="shrink-0">
               <a
-                href="https://apps.shopify.com/clickpost-order-edit-cancel#reviews"
+                href={APP_STORE_REVIEWS_URL}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="group inline-flex items-center gap-2 rounded-full bg-white px-7 py-3.5 text-[14px] font-semibold text-neutral-900 shadow-lg transition-opacity hover:opacity-90"

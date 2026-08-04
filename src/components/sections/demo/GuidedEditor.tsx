@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, ChevronDown, ChevronRight, Globe, MapPin, Pencil, Play, Sparkles, Wallet } from "lucide-react";
 import type { DemoStore } from "@/lib/site";
+import { APP_STORE_URL as APP_URL } from "@/lib/site";
 import type { Addr } from "./DemoMock";
 import { DemoMock } from "./DemoMock";
 import { CodToPrepaidMock } from "./CodToPrepaidMock";
@@ -11,7 +12,6 @@ import { TourOverlay, type TourRect } from "./TourOverlay";
 import { ShopifyAppStoreBadge } from "./ShopifyAppStoreBadge";
 import { BuiltForShopifyBadge } from "./BuiltForShopifyBadge";
 
-const APP_URL = "https://apps.shopify.com/clickpost-order-edit-cancel";
 
 type Tab = "editing" | "cod-prepaid" | "address" | "cancel";
 type Tour = "editing" | "cod-prepaid" | "address";

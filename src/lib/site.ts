@@ -27,6 +27,18 @@ function reviewText(storeName: string): string | null {
   return r ? r.content.replace(/\s*\n\s*/g, " ").trim() : null;
 }
 
+/**
+ * Shopify App Store listing — the single source of truth for every CTA on the site.
+ * Carries the India demo's UTM tags, so installs attribute back to this page. It was
+ * previously hard-coded in five files, which meant a tag change had to be repeated
+ * five times.
+ */
+export const APP_STORE_URL =
+  "https://apps.shopify.com/clickpost-order-edit-cancel?utm_source=clickpost_demo_IN&utm_medium=referral_IN&utm_campaign=order_edit_demo_IN&utm_content=sticky_cta_IN";
+
+/** Same listing, deep-linked to its reviews. The fragment has to follow the query. */
+export const APP_STORE_REVIEWS_URL = `${APP_STORE_URL}#reviews`;
+
 export const site = {
   name: "Clickpost", // brand wordmark (logo slot left intentionally empty in UI)
   product: "Order Editing & Upsell",
