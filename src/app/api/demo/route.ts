@@ -340,6 +340,143 @@ function jsonLdToProduct(node: Record<string, unknown>, base: URL): DemoProductO
   };
 }
 
+// --- Embedded app state (single-page storefronts) -------------------------
+// Some stores render the catalogue client-side and ship it as one JSON blob in a
+// <script>. There is no /products.json and no JSON-LD, so nothing above finds them.
+
+/** Globals worth trying, in the order they're most likely to hold a catalogue. */
+const STATE_GLOBALS = [
+  "__REACT_QUERY_STATE__",
+  "__PRELOADED_STATE__",
+  "__NUXT__",
+  "__NEXT_DATA__",
+];
+
+/**
+ * Keys that mark an object as a *product* rather than a nav item, author or
+ * category. Requiring one of these alongside a name is what stops the walker
+ * dragging in every named object on the page.
+ */
+const PRODUCT_SIGNALS = [
+  "looks",
+  "sku",
+  "permalink",
+  "handle",
+  "style_code",
+  "product_type",
+  "variants",
+  "price",
+];
+
+/**
+ * Stand-in prices for stores that don't publish one. Jewlr prices at
+ * configuration time, so its price fields are null — the demo still needs numbers
+ * for the cart maths to mean anything. Assigned by index, so they're stable.
+ */
+const DEMO_PRICES = [2499, 3999, 1899, 5499, 2999, 6999];
+
+/**
+ * An image value may be a full srcset ("url 256w, url 600w, …"). Take one URL and
+ * ask for the largest render the CDN offers, so the demo isn't showing thumbnails.
+ */
+function cleanSrcset(raw: string): string {
+  const first = raw.split(",")[0]?.trim().split(/\s+/)[0] ?? raw.trim();
+  return first.replace(/([?&]dim=)\d+/, "$1600");
+}
+
+/** Pull a usable image out of a product object, whatever shape it stores one in. */
+function embeddedImage(p: Record<string, unknown>, base: URL): string | null {
+  // jewlr keeps images per look/view: looks[view].images[0]
+  const looks = p.looks;
+  if (looks && typeof looks === "object") {
+    for (const view of Object.values(looks as Record<string, unknown>)) {
+      const imgs = (view as Record<string, unknown>)?.images;
+      if (Array.isArray(imgs) && typeof imgs[0] === "string" && imgs[0]) {
+        return absolutize(cleanSrcset(imgs[0]), base);
+      }
+    }
+  }
+  // generic shapes
+  const single = p.image ?? p.featured_image ?? p.thumbnail;
+  if (typeof single === "string" && single) return absolutize(cleanSrcset(single), base);
+  const many = p.images;
+  if (Array.isArray(many) && typeof many[0] === "string" && many[0]) {
+    return absolutize(cleanSrcset(many[0]), base);
+  }
+  return null;
+}
+
+/** A number if the object actually carries one, else 0 for the caller to fill in. */
+function embeddedPrice(p: Record<string, unknown>): number {
+  const raw = p.price;
+  if (typeof raw === "number" && raw > 0) return Math.round(raw);
+  if (typeof raw === "string" && Number(raw) > 0) return Math.round(Number(raw));
+  // price can be an object of nulls (priced at configuration) — check the usual fields
+  if (raw && typeof raw === "object") {
+    const o = raw as Record<string, unknown>;
+    for (const k of ["price_to_display", "selling", "sale_price", "reg_price", "amount"]) {
+      const v = o[k];
+      if (typeof v === "number" && v > 0) return Math.round(v);
+      if (typeof v === "string" && Number(v) > 0) return Math.round(Number(v));
+    }
+  }
+  return 0;
+}
+
+/**
+ * Walk an embedded state blob and collect anything product-shaped. Returns [] when
+ * the page has no such blob, so it costs nothing on stores handled further up.
+ */
+function productsFromEmbeddedState(html: string, base: URL): DemoProductOut[] {
+  const out: DemoProductOut[] = [];
+  const seen = new Set<string>();
+
+  for (const global of STATE_GLOBALS) {
+    const m = html.match(
+      new RegExp(`${global}\\s*=\\s*(\\{[\\s\\S]*?\\})\\s*;?\\s*<\\/script>`)
+    );
+    if (!m) continue;
+
+    let root: unknown;
+    try {
+      root = JSON.parse(m[1]);
+    } catch {
+      continue; // truncated or not JSON after all — try the next global
+    }
+
+    const visit = (node: unknown, depth: number) => {
+      if (!node || typeof node !== "object" || depth > 14) return;
+      if (Array.isArray(node)) {
+        for (const item of node) visit(item, depth + 1);
+        return;
+      }
+      const obj = node as Record<string, unknown>;
+      const name = typeof obj.name === "string" ? decodeHtml(obj.name.trim()) : "";
+      if (name && PRODUCT_SIGNALS.some((k) => k in obj) && !seen.has(name.toLowerCase())) {
+        seen.add(name.toLowerCase());
+        out.push({
+          id: String(obj.style_code ?? obj.sku ?? obj.handle ?? obj.permalink ?? name),
+          title: name,
+          variant: typeof obj.product_type === "string" ? obj.product_type : "",
+          price: embeddedPrice(obj),
+          qty: 1,
+          image: embeddedImage(obj, base),
+          variants: [],
+        });
+      }
+      for (const key of Object.keys(obj)) visit(obj[key], depth + 1);
+    };
+    visit(root, 0);
+
+    if (out.length > 0) break; // first blob that yields products wins
+  }
+
+  // Only keep entries we can actually render, then fill in missing prices.
+  return out
+    .filter((p) => p.image)
+    .map((p, i) => (p.price > 0 ? p : { ...p, price: DEMO_PRICES[i % DEMO_PRICES.length] }));
+}
+
 function parseJsonLdProducts(html: string, base: URL): DemoProductOut[] {
   const nodes = collectJsonLdNodes(html);
   const products: DemoProductOut[] = [];
@@ -566,6 +703,10 @@ export async function POST(req: Request) {
   // Non-Shopify stores — pull schema.org/JSON-LD products from the homepage.
   if (products.length === 0 && html) {
     products = parseJsonLdProducts(html, url);
+  }
+  // Single-page storefronts — catalogue lives in an embedded state blob, not markup.
+  if (products.length === 0 && html) {
+    products = productsFromEmbeddedState(html, url);
   }
 
   const currency = parseCurrency(cartJson);
