@@ -6,6 +6,7 @@ import { Container } from "@/components/primitives/Container";
 import { DemoUrlInput } from "./demo/DemoUrlInput";
 import { DemoExperience } from "./demo/DemoExperience";
 import { useDemoData } from "@/hooks/useDemoData";
+import { pingLinkOpened } from "@/lib/track";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 
 // store URL -> path slug (its domain), e.g. "https://www.gullylabs.com/x" -> "gullylabs.com"
@@ -36,6 +37,8 @@ export function Hero() {
       setUrl(shared);
       setOpen(true);
       generate(shared);
+      // Only shared links ping — a merchant typing their own URL is not a read receipt.
+      pingLinkOpened(shared);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
