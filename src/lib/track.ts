@@ -1,12 +1,19 @@
 /**
- * Fire-and-forget "someone opened your shared link" ping.
+ * Fire-and-forget demo-open ping.
  *
  * Deliberately client-side: link-preview bots fetch the page without running JS,
- * so a server-side ping would fire when the link is *pasted* into Slack rather
- * than when a human actually opens it.
+ * so a server-side ping would fire when a link is *pasted* into Slack rather than
+ * when a human actually opened it.
  */
 
-/** One alert per store per browser session — reloads and re-opens stay quiet. */
+/** How the demo was opened — worth telling apart in the alert. */
+export type OpenSource = "link" | "typed";
+
+/**
+ * One alert per store per browser session, whichever way it opened. That keeps
+ * reloads quiet, and means someone who types a store and then refreshes (which
+ * rewrites the URL to /product-demo/<store>) is not reported twice.
+ */
 function alreadyPinged(store: string): boolean {
   try {
     const key = `demo-open-ping:${store.toLowerCase()}`;
@@ -19,14 +26,14 @@ function alreadyPinged(store: string): boolean {
   }
 }
 
-export function pingLinkOpened(store: string) {
+export function pingDemoOpened(store: string, source: OpenSource) {
   if (typeof window === "undefined" || !store) return;
 
   // ?noping lets us open our own links without alerting ourselves.
   if (new URLSearchParams(window.location.search).has("noping")) return;
   if (alreadyPinged(store)) return;
 
-  const body = JSON.stringify({ store, referrer: document.referrer || "" });
+  const body = JSON.stringify({ store, source, referrer: document.referrer || "" });
 
   // keepalive so the request survives the user navigating straight on.
   void fetch("/api/track", {

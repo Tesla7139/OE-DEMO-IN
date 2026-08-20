@@ -6,7 +6,7 @@ import { Container } from "@/components/primitives/Container";
 import { DemoUrlInput } from "./demo/DemoUrlInput";
 import { DemoExperience } from "./demo/DemoExperience";
 import { useDemoData } from "@/hooks/useDemoData";
-import { pingLinkOpened } from "@/lib/track";
+import { pingDemoOpened } from "@/lib/track";
 import { fadeUp, staggerContainer } from "@/lib/motion";
 
 // store URL -> path slug (its domain), e.g. "https://www.gullylabs.com/x" -> "gullylabs.com"
@@ -37,8 +37,7 @@ export function Hero() {
       setUrl(shared);
       setOpen(true);
       generate(shared);
-      // Only shared links ping — a merchant typing their own URL is not a read receipt.
-      pingLinkOpened(shared);
+      pingDemoOpened(shared, "link");
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -50,6 +49,9 @@ export function Hero() {
     setOpen(true);
     // reflect the store in the address bar so it can be copied/shared directly
     window.history.replaceState(null, "", `/product-demo/${slugFor(v)}`);
+    // A walk-in typing their own store is worth knowing about too. Same session
+    // key as the link ping, so a later refresh of this URL is not reported twice.
+    pingDemoOpened(slugFor(v), "typed");
     await generate(v);
   };
 

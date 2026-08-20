@@ -52,16 +52,24 @@ export async function POST(req: Request) {
 
   let store = "";
   let referrer = "";
+  let source = "";
   try {
-    const body = (await req.json()) as { store?: unknown; referrer?: unknown };
+    const body = (await req.json()) as { store?: unknown; referrer?: unknown; source?: unknown };
     if (typeof body.store === "string") store = body.store.trim().slice(0, 120);
     if (typeof body.referrer === "string") referrer = body.referrer.trim().slice(0, 200);
+    if (typeof body.source === "string") source = body.source.trim().slice(0, 20);
   } catch {
     // fall through — a ping with no store is still worth reporting
   }
 
+  // A link we sent and a walk-in typing their own store are different signals.
+  const headline =
+    source === "typed"
+      ? `:keyboard: *Store entered on site* — ${store || "unknown store"}`
+      : `:eyes: *Demo link opened* — ${store || "unknown store"}`;
+
   const message = [
-    `:eyes: *Demo link opened* — ${store || "unknown store"}`,
+    headline,
     `• Location: ${locationOf(req.headers)}`,
     `• Time: ${nowInIndia()} IST`,
     `• Referrer: ${referrer || "direct / none"}`,
