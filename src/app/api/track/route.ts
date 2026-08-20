@@ -36,6 +36,15 @@ function nowInIndia(): string {
   }).format(new Date());
 }
 
+/**
+ * Health check. Reports whether a webhook is configured — a boolean only, never
+ * the URL. Without this, POST returns 204 whether or not ALERT_WEBHOOK_URL is
+ * set, so "no alert arrived" is impossible to diagnose from outside.
+ */
+export async function GET() {
+  return NextResponse.json({ ok: true, webhookConfigured: Boolean(WEBHOOK) });
+}
+
 export async function POST(req: Request) {
   // Not configured is a normal state, not an error — stay silent so the client
   // never sees a failure for something it cannot fix.
