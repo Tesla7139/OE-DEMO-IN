@@ -75,15 +75,23 @@ export async function POST(req: Request) {
     `• Referrer: ${referrer || "direct / none"}`,
   ].join("\n");
 
+  // Report the upstream result. The browser ignores the body, but it turns a
+  // silent failure (revoked webhook, wrong URL) into something a curl can see —
+  // otherwise "no alert arrived" is indistinguishable from "webhook rejected it".
+  // No secret is exposed: just the status Slack/Discord returned.
+  let delivered = false;
+  let status: number | null = null;
   try {
-    await fetch(WEBHOOK, {
+    const res = await fetch(WEBHOOK, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: payloadFor(message),
     });
+    status = res.status;
+    delivered = res.ok;
   } catch {
     // A webhook that is down must not turn into a client-visible error.
   }
 
-  return new NextResponse(null, { status: 204 });
+  return NextResponse.json({ ok: true, delivered, status });
 }
