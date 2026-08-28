@@ -212,9 +212,31 @@ type ShopifyProduct = {
   handle?: string;
   title?: string;
   vendor?: string;
+  tags?: string[] | string;
   variants?: { title?: string; price?: string | number }[];
   images?: { src?: string }[];
 };
+
+/**
+ * Is this something a shopper could plausibly be shown in the demo order?
+ *
+ * A store's /products.json is not the same thing as its catalogue — it also
+ * carries event tickets, unlisted items, and staging junk. Shopify returns it
+ * newest-first, so one recent batch of those can fill the demo completely:
+ * gullylabs.com published six event listings and they crowded out every sneaker.
+ *
+ * Deliberately not a product_type blocklist — those never generalise. These are:
+ *   - no image: can't render as a product card whatever it is
+ *   - tagged "hidden": the merchant's own don't-surface-this marker
+ *   - "test" in the title: staging entry left public
+ */
+function isDisplayable(p: ShopifyProduct): boolean {
+  if (!p.images?.length) return false;
+  const tags = Array.isArray(p.tags) ? p.tags : String(p.tags ?? "").split(",");
+  if (tags.some((t) => String(t).trim().toLowerCase() === "hidden")) return false;
+  if (/\btests?\b/i.test(String(p.title ?? ""))) return false;
+  return true;
+}
 
 /** Brand name from a products.json vendor field — fallback when the homepage is unreadable. */
 function vendorFrom(json: unknown): string | null {
@@ -231,7 +253,11 @@ function parseProducts(json: unknown): DemoProductOut[] {
     json && typeof json === "object" && Array.isArray((json as { products?: unknown }).products)
       ? ((json as { products: ShopifyProduct[] }).products)
       : [];
-  return arr
+  // Filter first, THEN cap — capping first would just re-select the same junk.
+  // If a store somehow has nothing displayable, fall back to the raw list rather
+  // than reporting zero products and dropping through to the sample catalogue.
+  const shown = arr.filter(isDisplayable);
+  return (shown.length > 0 ? shown : arr)
     .slice(0, 8)
     .map((p) => {
       const v = p.variants?.[0];
@@ -665,8 +691,10 @@ export async function POST(req: Request) {
     return NextResponse.json(hit.data);
   }
 
-  const productsUrl = `${url.origin}/products.json?limit=8`;
-  const collectionsUrl = `${url.origin}/collections/all/products.json?limit=8`;
+  // 30, not 8: the response is filtered down to 8 displayable products, so the
+  // pool has to be big enough to survive a run of unlisted/event entries at the top.
+  const productsUrl = `${url.origin}/products.json?limit=30`;
+  const collectionsUrl = `${url.origin}/collections/all/products.json?limit=30`;
 
   // Phase 1 — fast path (Node + curl), concurrent, NO Jina. Handles every store
   // that isn't behind a Node-blocking WAF, with zero rate-limited requests.
