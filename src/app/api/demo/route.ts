@@ -737,6 +737,15 @@ export async function POST(req: Request) {
     products = productsFromEmbeddedState(html, url);
   }
 
+  // Final pass, after every source has been tried. parseProducts screens the
+  // Shopify feed on its raw fields (tags), but JSON-LD and embedded-state products
+  // never go through it — so the checks that don't need Shopify-specific fields are
+  // applied here, to whatever source actually produced the list. Same guard: if
+  // nothing survives, keep what we had rather than reporting zero products and
+  // dropping the client through to the sample catalogue.
+  const displayable = products.filter((p) => p.image && !/\btests?\b/i.test(p.title));
+  if (displayable.length > 0) products = displayable;
+
   const currency = parseCurrency(cartJson);
 
   // Never hard-fail: even when a store blocks us entirely (no readable homepage and
