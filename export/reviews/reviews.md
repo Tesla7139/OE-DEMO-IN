@@ -1,0 +1,314 @@
+# Clickpost Order Editing — Shopify App Store reviews
+
+Exported verbatim from `src/lib/reviews.ts` (which mirrors the Shopify App Store
+reviews.csv export). 51 reviews, all 5-star, newest first.
+
+Text is unedited — the occasional typo is the merchant's own.
+
+---
+
+### 1. bearhouseindia
+
+_JUNE 9, 2026 · 5/5_
+
+Simple, effective, and reliable. Allows customers to edit their orders easily without contacting support, making the post-purchase experience seamless. Highly recommended!
+
+### 2. sanskritagain
+
+_JUNE 5, 2026 · 5/5_
+
+Our experience with the app has been very positive so far. It integrates seamlessly with our Shopify store and empowers customers to manage their orders more effectively after checkout. It's a simple concept, but it delivers real value and helps streamline our day-to-day operations.
+
+### 3. V-Guard Industries Limited
+
+_JUNE 2, 2026 · 5/5_
+
+We installed Clickpost mainly to give customers more flexibility after checkout, and it’s been working really well. Earlier, our support inbox was full of simple edit requests, but now most customers handle those changes themselves. Definitely helped streamline things for our team.
+
+### 4. PairieTales
+
+_MAY 20, 2026 · 5/5_
+
+We tried a few similar apps before switching to Clickpost, but this one was much easier to set up and customize. The order editing experience is smooth for customers, and the support team has been responsive and helpful whenever we needed assistance. Overall, it’s been a very positive experience for our store.
+
+### 5. Berry - Wellwithlife
+
+_MAY 20, 2026 · 5/5_
+
+After using the app for a month, we’ve definitely noticed fewer customer support requests related to order updates. The experience for customers feels seamless, and the app has been stable without any major issues
+
+### 6. litemed
+
+_MAY 19, 2026 · 5/5_
+
+Works well, has helped us reduce our returns.
+
+### 7. Mateina
+
+_MAY 19, 2026 · 5/5_
+
+One of the best order editing apps available that actually works! I've tested about a dozen, and this by far was one of the best. Amazing team and support as well. Highly recommended!
+
+### 8. Divinelane
+
+_MAY 13, 2026 · 5/5_
+
+Simple and effective app. We were looking for something that lets customers update orders after checkout without manual intervention, and this fits perfectly. Setup didn’t take long, and everything worked out of the box. Appreciate the quick support when needed.
+
+### 9. Wow - Wellwithlife
+
+_MAY 13, 2026 · 5/5_
+
+This app solved a real problem for us. Earlier, our team had to manually handle cancellations and changes, which was time-consuming. Now customers can do it themselves within a set window. The app is easy to configure and does what it says. No complaints so far.
+
+### 10. MIRAGGIO
+
+_MAY 12, 2026 · 5/5_
+
+Really useful tool if you deal with frequent order changes. We especially like the flexibility it gives customers without affecting our operations. The UI is straightforward, and the team behind it seems quite proactive. Looking forward to exploring more of the upsell features.
+
+### 11. Wellwith
+
+_APRIL 30, 2026 · 5/5_
+
+Nice little app. Clickpost made it easy for customers to edit orders without contacting us all the time. Setup was quick, and Mohit was super helpful when we had a small issue. Solid support and does the job well.
+
+### 12. Modomu
+
+_APRIL 28, 2026 · 5/5_
+
+Really happy with Clickpost so far. We added it mainly for order edits but ended up using the upsell part too, which actually brought in a bit of extra revenue without much effort. Setup was pretty straightforward, and when I got stuck, Smit jumped in and helped quickly. Loving it so far.
+
+### 13. Muffynn
+
+_APRIL 2, 2026 · 5/5_
+
+We’ve had a great experience using the ClickPost Order Editing app. It allows customers to easily update addresses, change sizes, or modify orders post-purchase, which has significantly reduced our support queries. Support team is responsive and helpful whenever needed.
+
+### 14. lovelang
+
+_APRIL 2, 2026 · 5/5_
+
+Clean and simple app, no unnecessary complexity. Helps customers manage their orders themselves, which has saved us a lot of time daily.
+
+### 15. buysohi
+
+_APRIL 2, 2026 · 5/5_
+
+Really happy with how simple and effective this is. It’s reduced a lot of manual work and made the whole process feel more seamless.
+
+### 16. HoneyVeda
+
+_APRIL 2, 2026 · 5/5_
+
+good app , it helps the clients to identify the data where customer modified the details of orders. also helps the customers edit the data on their end for smoother operations. it helps the organization to save the support cost and time.
+
+### 17. Samoh International
+
+_MARCH 30, 2026 · 5/5_
+
+Simple, does exactly what we needed. Customers can fix their own orders without reaching out, and it’s honestly saved our team a lot of time.
+
+### 18. Pinacolada
+
+_MARCH 27, 2026 · 5/5_
+
+Been using this order editing app for a few weeks now and it's been pretty smooth. The main thing I like is how easy it is for customers to make changes themselves instead of emailing us every time. Mohit from the team was super quick to respond when I had a small issue during setup, got it fixed in no time. Definitely worth it
+
+### 19. Haute Sauce
+
+_MARCH 19, 2026 · 5/5_
+
+Installed Clickpost recently and it works great. Customers can edit their orders and even add extra items which is a nice bonus. We were looking for something simple and this app does the job. Support was quick when we had a small question. Thanks to Smit for the help.
+
+### 20. Curl Warehouse
+
+_MARCH 19, 2026 · 5/5_
+
+This has been reducing the number of emails we receive to update orders. It's easy to use and set up and the developers have been very receptive to changes and suggestions and quick to respond to emails.
+
+### 21. Renue By Science
+
+_MARCH 10, 2026 · 5/5_
+
+Mohit and the team at ClickPost are an exceptional team of developers and nice people to boot. They listen to feedback for improvement and new features, and have built genuinely useful tools for Shopify stores.
+
+### 22. Doonails
+
+_MARCH 6, 2026 · 5/5_
+
+Really helped us quickly to fix all issues
+
+### 23. GHAR SOAPS
+
+_FEBRUARY 14, 2026 · 5/5_
+
+Clickpost been a great upgrade for our store. Customers can log in, check their info, and manage everything easily, which has made the whole experience feel smoother and more professional.
+
+### 24. Westside Global
+
+_FEBRUARY 13, 2026 · 5/5_
+
+We just installed Clickpost a few days ago and honestly it's been a very smooth experience. Setup was way easier than I expected and everything worked right out of the box. The order editing feature is exactly what we needed since customers always want to change something after checkout. Smit helped us get everything configured and answered our questions super fast.
+
+### 25. Burnt Toast
+
+_FEBRUARY 5, 2026 · 5/5_
+
+Been using Clickpost for a few months now and it does exactly what we needed. Customers can update addresses or fix mistakes without us having to jump in every time, which saves a lot of back and forth. Setup was pretty easy, and when I had a couple questions, Smit replied super fast and walked me through it. The order editing app runs smoothly and hasn't caused any issues with our checkout or fulfillment. Honestly just a solid app that works as expected. Would recommend if you want fewer support tickets and happier customers.
+
+### 26. Bacca Bucci
+
+_JANUARY 28, 2026 · 5/5_
+
+Been using Clickpost for a few months now and honestly it just works. Customers can update their orders without emailing us back and forth, which saves our team a ton of time. Setup was pretty easy and when I had a question, Smit replied super fast and walked me through it. The order editing app paid for itself within the first week just from fewer support tickets and upsells. If you deal with order change requests a lot, this is a no brainer.
+
+### 27. Mars By GHC
+
+_JANUARY 8, 2026 · 5/5_
+
+We’ve been using Clickpost and it’s genuinely been super helpful. Customers can handle order edits themselves, and the post-purchase upsells have been a solid bonus for incremental revenue. Setup was straightforward, everything’s been running smoothly, and support has been great too — the team was quick to respond and got us up and running fast.
+
+### 28. World of Asaya
+
+_DECEMBER 18, 2025 · 5/5_
+
+Really happy with Clickpost so far. We added it mainly so customers could fix address/phone number mistakes after checkout and it's been super smooth. It has reduced our overall RTO upto 25%. The setup was easy and didn't mess with our theme at all. I also like how clean the order editing flow looks on the customer side. Had a small question during setup and Smit replied pretty fast and explained everything clearly. Support actually feels human, which is rare. And they give great upsell functionality as well, while the editing is happening. Great app and team!
+
+### 29. Gladful
+
+_DECEMBER 17, 2025 · 5/5_
+
+Really happy with this app. We installed Clickpost mainly to let customers fix address mistakes and update orders themselves, and it works exactly as expected. Setup was pretty easy, and when I had a question, Smit helped me sort it out fast. Support was quick and friendly, which I really appreciate.It has saved our team a lot of back and forth. We have also seen fewer canceled orders since using it. Overall, solid app that does what it promises. Would definitely recommend if you want smoother order edits and less manual work.
+
+### 30. Miniwesst
+
+_DECEMBER 15, 2025 · 5/5_
+
+Really happy with this order editing app. It was easy to set up and does exactly what I needed. Smit helped me get everything running in just a few minutes which I really appreciated. Simple and works great.
+
+### 31. Samoh by TATA
+
+_DECEMBER 10, 2025 · 5/5_
+
+Clickpost has been a game changer for our customer experience. Lots of our customers have come back and told us that they love this feature. We already edit 100+ orders monthly and has resulted in lower support tickets. What I appreciate is the flexibility, from modifying addresses to changing products and even adding upsells, it all just works. The team was very helpful with installation and setup. Just go for it!
+
+### 32. Bonhomie
+
+_DECEMBER 4, 2025 · 5/5_
+
+A much needed solution to a very common support issue. Customers used to always reach out to us for changing their address or items, now they can edit it on their own. Multiple customers have reached out to us that they love this new feature! The team is superb with their support and responsiveness, and I keep seeing constant improvements in the product. Strongly recommended.
+
+### 33. French Accent
+
+_NOVEMBER 20, 2025 · 5/5_
+
+The setup process was smooth, thanks to the incredibly helpful and responsive ClickPost support team. Their guidance made the onboarding quick and effortless. This is honestly one of the best decisions we've made for our operations. A must-have app for any brand looking to enhance post-purchase experience and improve efficiency. Highly recommended!
+
+### 34. Tuco Kids
+
+_NOVEMBER 19, 2025 · 5/5_
+
+Super helpful app! Lets customers edit orders easily and reduced our support load. Simple setup, smooth UI, and great support from the team.
+
+### 35. Bichhavans
+
+_NOVEMBER 12, 2025 · 5/5_
+
+The app has been very useful to us. We were looking something like this to reduce our support enquiries, and that is what is exactly did. Our customers love this feature and it makes everyone’s life just better. Plus they also have the upsell feature, which replaced my current upsell app! Worked flawlessly. It is an absolute no brainer to install this app. Loved the support provided by the ClickPost team during our setup process. Thanks Team ClickPost.
+
+### 36. MyBorosil
+
+_OCTOBER 14, 2025 · 5/5_
+
+Order editing app by clickpost is easy to install with a super responsive support team. It has reduced our support tickets. It has just made our life easier. Was very easy to setup on them. Loving it!
+
+### 37. The Gareeb Store
+
+_OCTOBER 14, 2025 · 5/5_
+
+Initially we were facing some issues, but the team helped us through the whole process. Been super smooth since then. It's easy, efficient and makes our day to day operations easy.No more address change or editing tickets. The upsells are a bonus, they have helped increase our AOV without affecting our conversion rates! Clickpost order editing has become an essential part of our store now. Big thanks to the team for all the support!
+
+### 38. Westside
+
+_SEPTEMBER 30, 2025 · 5/5_
+
+The app has been a huge help to our support team. With Clickpost order editing we saved a lot of tickets, especially during the sale season. And what stood out was that they got us extra revenue through post purchase upsells, so that was a bonus! Their support is very prompt, and open to feedback.
+
+### 39. Shred Finger Boards
+
+_SEPTEMBER 22, 2025 · 5/5_
+
+Works as described. I set an order editing window when customers can change/edit their own orders. They like it because it's fast and easy and I like it because it lowers my support tickets. Easily one of the best apps I have because it's easy to use and it gives both me and my customers what I want. It's a win/win app. The developers are always adding new features too, like upselling, that I appreciate. The more I can do within 1 app so I don't have to have a ton of apps, the better. I highly recommend.
+
+### 40. Wellbeing Nutrition
+
+_SEPTEMBER 17, 2025 · 5/5_
+
+Clickpost order editing has made our post purchase process so much better. Customers can now edit their orders without contacting support. Their upsells are a cherry on the top, and have increased our AOV. Real value for money, and absolutely great support from the team.
+
+### 41. Fulton365
+
+_SEPTEMBER 15, 2025 · 5/5_
+
+Great tool. Easy to install and use. Really easy to quantify the value: Each time an order is edited is one call/email that I didn't have to manage. The customer service team is also really good, fast and responsive.
+
+### 42. Starquik
+
+_AUGUST 29, 2025 · 5/5_
+
+Great app for letting customers edit or cancel their orders without hassle. It’s easy to set up, reduces support work, and the team is super responsive.
+
+### 43. Gully Labs
+
+_AUGUST 28, 2025 · 5/5_
+
+Great tool to reduce traffic for order modification. Their support is highly helpful.
+
+### 44. VanillaPura
+
+_AUGUST 27, 2025 · 5/5_
+
+Great experience and fantastic support from the ClickPost team with my questions. Our top customer service requests are for order edits, so this immediately cut support tickets making it easy to quantify the ROI. A lot of customization features and various upsell tools are included in the app that I can implement to increase AOV as well. I highly recommend it.
+
+### 45. Recode Studios
+
+_AUGUST 12, 2025 · 5/5_
+
+As a growing brand, Clickpost just makes my life easier. Customers used to message me minutes after placing their order for changing their address or if they picked the wrong size. Now they just fix it themselves. Works perfectly with our shipping software and Klaviyo. And the support by Smit is a bonus. I wish that I installed sooner.
+
+### 46. URturms
+
+_JULY 28, 2025 · 5/5_
+
+Great app and an exceptional support from the team. The app allows our customers to modify theirs orders without the need to contact us. This has given our support team to focus on more important tasks, and been a delight for our customers. I highly recommend this app, it will save you a lot of time and money.
+
+### 47. Paradyes
+
+_JULY 23, 2025 · 5/5_
+
+Exactly what we needed. No more customer queries about 'where is my order'. Everything’s available in their account. Smooth experience!
+
+### 48. RIJAC
+
+_JULY 16, 2025 · 5/5_
+
+We always wanted to give customers more flexibility after placing an order. This app delivered exactly that. Very intuitive and doesn’t affect our existing workflow. On point and instant support by Smit and Mohit
+
+### 49. Sammvaad
+
+_JULY 16, 2025 · 5/5_
+
+We were looking for a way to offer basic order changes without complicating our process. This app nailed it. Clean interface, easy for customers, and fits right into our workflow
+
+### 50. Italian Colony
+
+_JULY 15, 2025 · 5/5_
+
+This app does exactly what it promises. We've been able to reduce customer complaints by allowing easy order edits and cancellations. The setup was smooth, and their support team was quick to respond when we had questions. Definitely recommend it if you're looking to improve post-purchase experience.
+
+### 51. Sudathi
+
+_JUNE 30, 2025 · 5/5_
+
+ClickPost’s Order Editing & Cancel tool has been a game-changer for Sudathi. With alot of of our support tickets related to order edits, it helped our customers to self-edit addresses, variants, and even cancel orders before shipping. It drastically reduced support load, and improved customer satisfaction. A must-have tool for brands focused on delivering smooth, scalable customer experiences.
