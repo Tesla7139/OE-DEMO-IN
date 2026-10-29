@@ -2,18 +2,21 @@
 
 import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Check, ChevronDown, ChevronRight, Globe, MapPin, Pencil, Play, Sparkles, Wallet } from "lucide-react";
+import { BarChart3, Check, ChevronDown, ChevronRight, Globe, MapPin, MessageSquareQuote, Pencil, Play, Settings, Sparkles, Wallet } from "lucide-react";
 import type { DemoStore } from "@/lib/site";
 import { APP_STORE_URL as APP_URL } from "@/lib/site";
 import type { Addr } from "./DemoMock";
 import { DemoMock } from "./DemoMock";
 import { CodToPrepaidMock } from "./CodToPrepaidMock";
+import { AnalyticsMock } from "./AnalyticsMock";
+import { SettingsMock } from "./SettingsMock";
+import { TestimonialsMock } from "./TestimonialsMock";
 import { TourOverlay, type TourRect } from "./TourOverlay";
 import { ShopifyAppStoreBadge } from "./ShopifyAppStoreBadge";
 import { BuiltForShopifyBadge } from "./BuiltForShopifyBadge";
 
 
-type Tab = "editing" | "cod-prepaid" | "address" | "cancel";
+type Tab = "editing" | "cod-prepaid" | "address" | "cancel" | "analytics" | "config" | "testimonials";
 type Tour = "editing" | "cod-prepaid" | "address";
 type Section = "contact" | "shipping" | "order" | "discount" | "cancel";
 
@@ -29,7 +32,14 @@ const NAV_FEATURES: { key: Tab; label: string; icon: React.ComponentType<{ class
   { key: "editing", label: "Order editing", icon: Pencil },
   { key: "cod-prepaid", label: "COD to Prepaid", icon: Wallet },
   { key: "address", label: "Address validation", icon: MapPin },
+  // no guided tour — these just show their screen
+  { key: "analytics", label: "Analytics", icon: BarChart3 },
+  { key: "config", label: "Configurations", icon: Settings },
+  { key: "testimonials", label: "Testimonials", icon: MessageSquareQuote },
 ];
+
+/** Tabs that aren't the storefront, so they skip the store-URL browser bezel. */
+const NO_BEZEL: ReadonlySet<Tab> = new Set(["analytics", "config", "testimonials"]);
 
 
 type ActionPill = {
@@ -295,6 +305,15 @@ const FINALE: Record<Tab, { action: string; brand?: string; stat?: string }> = {
     action: "handle cancellations",
     brand: "Gladful",
     stat: "saw far fewer cancelled orders once shoppers could self-edit instead.",
+  },
+  analytics: {
+    action: "track every edit and upsell",
+  },
+  config: {
+    action: "set up order editing",
+  },
+  testimonials: {
+    action: "see results like these",
   },
 };
 
@@ -886,6 +905,7 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
           {/* body — the editing window: browser bezel (store URL) + sliding mock */}
           <div className="relative z-10 w-full overflow-hidden rounded-2xl bg-white shadow-soft-xl" style={{ border: "1.5px solid #1f2430" }}>
             {/* browser bezel with the store URL */}
+            {!NO_BEZEL.has(tab) && (
             <div className="flex items-center gap-2 border-b border-neutral-200 bg-neutral-50 px-4 py-2.5">
               {/* store logo — in place of the traffic-light dots */}
               {store.logo ? (
@@ -898,6 +918,7 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
                 {domain}
               </div>
             </div>
+            )}
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={tab === "editing" ? `editing-${editView}` : tab}
@@ -942,6 +963,9 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
                 {tab === "cancel" && (
                   <DemoMock store={store} initialOpen="cancel" forceOpen="cancel" maxHeight={560} />
                 )}
+                {tab === "analytics" && <AnalyticsMock store={store} embedded withHome />}
+                {tab === "config" && <SettingsMock store={store} maxHeight={560} />}
+                {tab === "testimonials" && <TestimonialsMock maxHeight={560} />}
               </motion.div>
             </AnimatePresence>
           </div>
