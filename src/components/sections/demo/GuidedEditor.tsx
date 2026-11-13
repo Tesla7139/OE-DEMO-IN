@@ -41,9 +41,9 @@ const NAV_FEATURES: { key: Tab; label: string; icon: React.ComponentType<{ class
   { key: "testimonials", label: "Testimonials", icon: MessageSquareQuote },
 ];
 
-/** Demo window height at the rail-open width, and the height/width ratio it keeps as it widens. */
+/** Minimum demo window height, and the most height/width it may take: in practice it fills the screen down to 24px above the bottom (the cap). */
 const DEMO_H = 560;
-const DEMO_RATIO = 0.6;
+const DEMO_RATIO = 0.85;
 /** Share of the row the open feature rail takes on desktop. */
 const RAIL_SHARE = 0.26;
 
