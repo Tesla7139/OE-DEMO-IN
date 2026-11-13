@@ -131,6 +131,33 @@ function Media({ t }: { t: Testimonial }) {
   );
 }
 
+/** One review: media beside the quote. `ghost` is an invisible copy used only for sizing. */
+function Slide({ t, expanded, onToggle, ghost }: { t: Testimonial; expanded: boolean; onToggle?: () => void; ghost?: boolean }) {
+  const long = t.content.length > 320;
+  return (
+    <div className="grid gap-8 @2xl:grid-cols-[1fr_1.1fr] @2xl:items-center">
+      <Media t={t} />
+      <blockquote>
+        {/* oversized open-quote, as on the landing page's customer quote */}
+        <div aria-hidden className="h-9 select-none font-serif text-[72px] font-bold leading-[0.9] text-[#b8c4ff]">&ldquo;</div>
+        <p className={`mt-2 whitespace-pre-line text-[16.5px] leading-[1.65] text-neutral-900 ${long && !expanded ? "line-clamp-6" : ""}`}>
+          {t.content}
+        </p>
+        {long && (
+          <button type="button" onClick={onToggle} className="mt-1 text-[12px] text-neutral-500 underline underline-offset-4 hover:text-neutral-900">
+            {expanded ? "Less" : "More"}
+          </button>
+        )}
+        <footer className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
+          {/* eslint-disable-next-line @next/next/no-img-element -- local customer logo */}
+          <img src={t.logo} alt={ghost ? "" : t.brand} className="h-6 w-auto max-w-[120px] object-contain brightness-0" />
+          <span className="text-[12.5px] text-slate-500">{[t.meta, t.date].filter(Boolean).join(" · ")}</span>
+        </footer>
+      </blockquote>
+    </div>
+  );
+}
+
 function Spotlight() {
   const [[i, dir], setPos] = useState<[number, number]>([0, 1]);
   const [expanded, setExpanded] = useState(false);
@@ -139,39 +166,31 @@ function Spotlight() {
     setPos(([cur]) => [(cur + d + TESTIMONIALS.length) % TESTIMONIALS.length, d]);
   };
   const t = TESTIMONIALS[i];
-  const long = t.content.length > 320;
 
   return (
     <div>
-      <AnimatePresence mode="wait" initial={false}>
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, x: dir * 16 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: dir * -16 }}
-          transition={{ duration: 0.2, ease: "easeOut" }}
-          className="grid gap-8 @2xl:grid-cols-[1fr_1.1fr] @2xl:items-center"
-        >
-          <Media t={t} />
-          <blockquote>
-            {/* oversized open-quote, as on the landing page's customer quote */}
-            <div aria-hidden className="h-9 select-none font-serif text-[72px] font-bold leading-[0.9] text-[#b8c4ff]">&ldquo;</div>
-            <p className={`mt-2 whitespace-pre-line text-[16.5px] leading-[1.65] text-neutral-900 ${long && !expanded ? "line-clamp-6" : ""}`}>
-              {t.content}
-            </p>
-            {long && (
-              <button type="button" onClick={() => setExpanded((v) => !v)} className="mt-1 text-[12px] text-neutral-500 underline underline-offset-4 hover:text-neutral-900">
-                {expanded ? "Less" : "More"}
-              </button>
-            )}
-            <footer className="mt-5 flex flex-wrap items-center gap-x-4 gap-y-2">
-              {/* eslint-disable-next-line @next/next/no-img-element -- local customer logo */}
-              <img src={t.logo} alt={t.brand} className="h-6 w-auto max-w-[120px] object-contain brightness-0" />
-              <span className="text-[12.5px] text-slate-500">{[t.meta, t.date].filter(Boolean).join(" · ")}</span>
-            </footer>
-          </blockquote>
-        </motion.div>
-      </AnimatePresence>
+      {/* every review also sits invisibly in the same grid cell, so the stage is always
+          as tall as the tallest one and switching reviews never resizes it */}
+      <div className="grid [&>*]:[grid-area:1/1]">
+        {TESTIMONIALS.map((g) => (
+          <div key={g.brand} aria-hidden inert className="invisible">
+            <Slide t={g} expanded={false} ghost />
+          </div>
+        ))}
+        <div className={expanded ? "" : "self-center"}>
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: dir * 16 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: dir * -16 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
+            >
+              <Slide t={t} expanded={expanded} onToggle={() => setExpanded((v) => !v)} />
+            </motion.div>
+          </AnimatePresence>
+        </div>
+      </div>
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <a

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type CSSProperties } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { BarChart3, Check, ChevronDown, ChevronRight, CircleUserRound, Globe, MapPin, MessageSquareQuote, PanelLeftClose, PanelLeftOpen, Pencil, Play, Settings, Sparkles, Wallet } from "lucide-react";
 import type { DemoStore } from "@/lib/site";
@@ -44,6 +44,8 @@ const NAV_FEATURES: { key: Tab; label: string; icon: React.ComponentType<{ class
 /** Demo window height at the rail-open width, and the height/width ratio it keeps as it widens. */
 const DEMO_H = 560;
 const DEMO_RATIO = 0.6;
+/** Share of the row the open feature rail takes on desktop. */
+const RAIL_SHARE = 0.26;
 
 /** Tabs that aren't the storefront, so they skip the store-URL browser bezel. */
 const NO_BEZEL: ReadonlySet<Tab> = new Set(["account", "analytics", "config", "testimonials"]);
@@ -390,6 +392,18 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
   const rootRef = useRef<HTMLDivElement>(null);
   const demoFrameRef = useRef<HTMLDivElement>(null); // the editing/demo window (blurred on outcome steps)
   const windowRef = useRef<HTMLDivElement>(null); // the white demo window itself
+  const gridRef = useRef<HTMLDivElement>(null); // rail + stage row
+
+  // The rail's open width (26% of the row). Its contents keep this width while the
+  // rail's own width animates to 0, so they slide out of view instead of squashing.
+  const [railW, setRailW] = useState<number | null>(null);
+  useEffect(() => {
+    const el = gridRef.current;
+    if (!el) return;
+    const ro = new ResizeObserver(() => setRailW(Math.round(el.clientWidth * RAIL_SHARE)));
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, []);
 
   // Window height follows its width, so collapsing the rail grows the window in both
   // directions (same proportions) instead of just stretching it sideways. DEMO_H is
@@ -811,21 +825,26 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
       {/* During the tour, the left rail slides away and the demo centers so the
           typewriter callouts have clean space to the side. Closing the tour
           (cross / Esc → activeTour = null) restores the normal two-column view. */}
-      {/* The rail collapses like Shopify's sidebar: its column animates to 0 (both
-          tracks stay minmax(0, Nfr) so grid-template-columns interpolates) while the
-          content fades and slides left, and the demo stage takes the full width. */}
+      {/* The rail collapses like Shopify's sidebar: on desktop the row is a flex row and
+          the rail's width animates between 26% and 0 (the stage grows with it), while
+          the rail's contents keep their open width and slide left under the clip. */}
       <div
-        className={`demo-scale-grid grid grid-cols-1 items-stretch gap-6 lg:min-h-[100svh] lg:gap-0 lg:transition-[grid-template-columns] lg:duration-500 lg:ease-[cubic-bezier(.2,.8,.2,1)] ${
-          railOpen ? "lg:grid-cols-[minmax(0,0.52fr)_minmax(0,1.48fr)]" : "lg:grid-cols-[minmax(0,0fr)_minmax(0,1.48fr)]"
-        }`}
+        ref={gridRef}
+        className="demo-scale-grid grid grid-cols-1 items-stretch gap-6 lg:flex lg:min-h-[100svh] lg:gap-0"
       >
         {/* LEFT: feature buttons + the "ready to try" box (raised on mobile so the
             feature dropdown overlays the demo top bar instead of hiding behind it) */}
         <div
           aria-hidden={!railOpen || undefined}
           inert={!railOpen || undefined}
-          className={`relative z-10 flex min-w-0 flex-col gap-6 px-3 pb-6 max-lg:z-30 lg:items-center lg:justify-start lg:overflow-hidden lg:pl-0 lg:pr-8 lg:pt-8 lg:pb-12 lg:transition-[opacity,translate] lg:duration-300 ${
-            railOpen ? "" : "lg:-translate-x-10 lg:opacity-0"
+          className={`relative z-10 max-lg:z-30 lg:shrink-0 lg:overflow-hidden lg:transition-[width] lg:duration-500 lg:ease-[cubic-bezier(.65,0,.35,1)] ${
+            railOpen ? "lg:w-[26%]" : "lg:w-0"
+          }`}
+        >
+        <div
+          style={railW ? ({ "--rail-w": `${railW}px` } as CSSProperties) : undefined}
+          className={`flex h-full flex-col gap-6 px-3 pb-6 lg:w-[var(--rail-w,100%)] lg:items-center lg:justify-start lg:pl-0 lg:pr-8 lg:pt-8 lg:pb-12 lg:transition-[opacity,translate] lg:duration-500 lg:ease-[cubic-bezier(.65,0,.35,1)] ${
+            railOpen ? "" : "lg:-translate-x-1/3 lg:opacity-0"
           }`}
         >
           {/* heading + feature buttons */}
@@ -902,34 +921,44 @@ export function GuidedEditor({ store }: { store: DemoStore }) {
               mt-auto pushes it to the bottom of the rail so there's a gap under the features */}
           <ReadyToTryBox tab={tab} className="max-lg:hidden lg:mt-auto" />
         </div>
+        </div>
 
         {/* RIGHT: full-bleed blue demo stage — top pill nav + paired sub-row + sliding window */}
         <div
           ref={demoFrameRef}
-          className="relative flex w-full flex-col justify-center gap-4 lg:justify-start lg:gap-5 lg:px-10 lg:pt-8 lg:pb-12 xl:px-16"
+          className="relative flex w-full flex-col justify-center gap-4 lg:min-w-0 lg:flex-1 lg:justify-start lg:gap-5 lg:px-10 lg:pt-8 lg:pb-12 xl:px-16"
         >
           {/* blue backdrop (desktop only) */}
           {/* with the rail collapsed it also covers the page's left gutter (DemoExperience's lg:pl-5 / xl:pl-6) */}
-          <div aria-hidden className={`absolute inset-0 z-0 hidden lg:block ${railOpen ? "" : "-left-6"}`} style={{ background: "linear-gradient(160deg, #eaf2ff 0%, #cfe0ff 42%, #a8c8ff 100%)" }} />
+          <div aria-hidden className={`absolute inset-0 z-0 hidden transition-[left] duration-500 ease-[cubic-bezier(.65,0,.35,1)] lg:block ${railOpen ? "" : "-left-6"}`} style={{ background: "linear-gradient(160deg, #eaf2ff 0%, #cfe0ff 42%, #a8c8ff 100%)" }} />
 
           {/* bar over the editing window — Start tour (left) · brand URL (center) · Start free trial (right);
               z-20 so the collapsed-rail feature dropdown opens over the window below */}
           <div className="relative z-20 flex items-center justify-between gap-3 max-lg:flex-wrap max-lg:justify-center max-lg:gap-2">
             <div className="flex shrink-0 items-center gap-2">
-            {!railOpen && railToggle}
-            {/* rail collapsed: switch features from a dropdown up here instead (desktop) */}
+            {/* rail collapsed (desktop): a plain reopen-the-rail icon, then the current feature
+                as a solid dark pill that opens the feature list */}
             {!railOpen && (
-              <div className="relative max-lg:hidden">
+              <div className="relative flex items-center gap-1.5 max-lg:hidden">
+                <button
+                  type="button"
+                  onClick={() => { setRailOpen(true); setTopMenuOpen(false); }}
+                  aria-label="Show features"
+                  aria-expanded={false}
+                  title="Show features"
+                  className="flex size-9 shrink-0 items-center justify-center rounded-lg text-neutral-700 transition-colors hover:bg-white/60 hover:text-neutral-950"
+                >
+                  <PanelLeftOpen className="size-[18px]" />
+                </button>
                 <button
                   type="button"
                   onClick={() => setTopMenuOpen((v) => !v)}
                   aria-expanded={topMenuOpen}
                   aria-haspopup="menu"
-                  className="flex items-center gap-2 whitespace-nowrap rounded-full bg-white py-2.5 pl-4 pr-3 text-[12.5px] font-semibold text-neutral-900 shadow-soft-md ring-1 ring-neutral-200 transition-colors hover:bg-neutral-50"
+                  className="flex items-center gap-2 whitespace-nowrap rounded-full bg-neutral-900 py-2.5 pl-4 pr-3 text-[12.5px] font-semibold text-white transition-colors hover:bg-neutral-800"
                 >
-                  {currentFeature && <currentFeature.icon className="size-3.5 text-[#155FFF]" />}
                   {currentFeature?.label}
-                  <ChevronDown className={`size-3.5 text-[#155FFF] transition-transform ${topMenuOpen ? "rotate-180" : ""}`} />
+                  <ChevronDown className={`size-3.5 text-white/70 transition-transform ${topMenuOpen ? "rotate-180" : ""}`} />
                 </button>
                 {topMenuOpen && (
                   <>
