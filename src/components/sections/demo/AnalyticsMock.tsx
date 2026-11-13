@@ -225,7 +225,7 @@ type AnalyticsTourRefs = {
 
 /** `embedded` drops the outer card chrome, for use inside the demo's browser window. */
 /** `withHome` opens on the app's home screen, which links through to Analytics. */
-export function AnalyticsMock({ store, viewTab, tourRefs, embedded, withHome }: { store: DemoStore; viewTab?: AnalyticsView; tourRefs?: AnalyticsTourRefs; embedded?: boolean; withHome?: boolean }) {
+export function AnalyticsMock({ store, viewTab, tourRefs, embedded, withHome, maxHeight = 560 }: { store: DemoStore; viewTab?: AnalyticsView; tourRefs?: AnalyticsTourRefs; embedded?: boolean; withHome?: boolean; maxHeight?: number }) {
   const [page, setPage] = useState<"home" | "analytics">(withHome ? "home" : "analytics");
   const [innerTab, setInnerTab] = useState<AnalyticsView>("overview");
   const tab = viewTab ?? innerTab;
@@ -321,7 +321,7 @@ export function AnalyticsMock({ store, viewTab, tourRefs, embedded, withHome }: 
 
   return (
     <div className={embedded ? "w-full bg-[#f1f1f1]" : "mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-border bg-[#f1f1f1] shadow-soft-xl"}>
-      <div className="max-h-[560px] overflow-y-auto no-scrollbar">
+      <div className="overflow-y-auto no-scrollbar" style={{ maxHeight }}>
         <AppHeader />
 
         {page === "home" ? (

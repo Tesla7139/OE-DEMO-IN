@@ -376,15 +376,18 @@ export function CodToPrepaidMock({
 
   return (
     <div className="relative w-full text-left">
-      <div className="bg-white">
+      {/* @container: in a wide demo window (rail collapsed) the page lays out like Shopify's
+          checkout — columns meet at the middle, content keeps a readable width, and the
+          grey summary panel fills the right half — instead of stretching edge to edge */}
+      <div className="@container bg-white">
         {/* Same two-column shell as the order-editing window: actions on the left,
             order summary in a right-hand aside. */}
         <div
-          className={`grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_270px] ${maxHeight ? "lg:no-scrollbar lg:h-[var(--demo-h)] lg:overflow-y-auto" : ""}`}
+          className={`grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_270px] @5xl:grid-cols-[minmax(0,1.15fr)_minmax(0,1fr)] ${maxHeight ? "lg:no-scrollbar lg:h-[var(--demo-h)] lg:overflow-y-auto" : ""}`}
           style={maxHeight ? ({ "--demo-h": `${maxHeight}px` } as CSSProperties) : undefined}
         >
           {/* ================= LEFT: confirmation, prepaid nudge, offers ================= */}
-          <div className="border-border p-4 lg:border-r">
+          <div className="border-border p-4 lg:border-r @5xl:px-10 @5xl:py-7 @5xl:[&>*]:ml-auto @5xl:[&>*]:max-w-[600px]">
             {/* confirmation header — pinned at the very top, as in the editing window */}
             <div className="mb-3 flex items-center gap-3">
               <span
@@ -548,7 +551,7 @@ export function CodToPrepaidMock({
           </div>
 
           {/* ================= RIGHT: order summary ================= */}
-          <aside className="bg-neutral-50 p-4">
+          <aside className="bg-neutral-50 p-4 @5xl:px-10 @5xl:py-7 @5xl:[&>*]:max-w-[420px]">
             <div className="flex items-baseline justify-between gap-3">
               <div className="min-w-0">
                 <div className="text-[15px] font-bold text-neutral-900">Order 57600</div>

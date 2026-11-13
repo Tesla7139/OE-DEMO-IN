@@ -615,6 +615,25 @@ function isBrandLike(s: string): boolean {
   return t.length <= 30 && t.split(/\s+/).length <= 4;
 }
 
+/**
+ * The logo image in the store's header — Shopify themes mark it with a "logo" class
+ * (header__logo-image, site-header__logo…) or a logo filename. Skips the white /
+ * transparent-header variant (invisible on our white bezel) and footer/payment icons.
+ */
+function headerLogo(html: string): string | null {
+  for (const m of html.matchAll(/<img\b[^>]*>/gi)) {
+    const tag = m[0];
+    const cls = /\bclass=["']([^"']*)["']/i.exec(tag)?.[1] ?? "";
+    const src = /\bsrc=["']([^"']+)["']/i.exec(tag)?.[1] ?? "";
+    if (!src || src.startsWith("data:")) continue;
+    const file = src.split("?")[0].split("/").pop() ?? "";
+    if (!/logo/i.test(cls) && !/logo/i.test(file)) continue;
+    if (/white|transparent|inverse|light|footer|payment|badge|partner/i.test(`${cls} ${file}`)) continue;
+    return src.replace(/&amp;/g, "&"); // attribute values arrive HTML-escaped
+  }
+  return null;
+}
+
 function parseBranding(html: string, base: URL): Omit<Branding, "products" | "currency"> {
   // Prefer og:site_name (a clean brand). Otherwise take the first segment of the
   // <title>, but only split on separators surrounded by whitespace or a pipe/dash —
@@ -643,16 +662,19 @@ function parseBranding(html: string, base: URL): Omit<Branding, "products" | "cu
       : `#${themeColor}`
     : null;
 
+  // The store's own header logo first (what shoppers recognise), then its app icon /
+  // favicon. og:image goes last: it's a social share card, usually a banner photo.
   const iconHref =
+    headerLogo(html) ||
     metaContent(html, [
       /<link[^>]+rel=["']apple-touch-icon[^"']*["'][^>]+href=["']([^"']+)["']/i,
       /<link[^>]+href=["']([^"']+)["'][^>]+rel=["']apple-touch-icon[^"']*["']/i,
     ]) ||
-    metaContent(html, [/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i]) ||
     metaContent(html, [
       /<link[^>]+rel=["'](?:shortcut )?icon["'][^>]+href=["']([^"']+)["']/i,
       /<link[^>]+href=["']([^"']+)["'][^>]+rel=["'](?:shortcut )?icon["']/i,
-    ]);
+    ]) ||
+    metaContent(html, [/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i]);
 
   return {
     brandName: siteName ? capitalize(siteName) : null,
